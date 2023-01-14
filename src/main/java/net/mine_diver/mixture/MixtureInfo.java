@@ -23,7 +23,7 @@ public final class MixtureInfo {
 		annotation = AnnotationInfo.of(classNode.invisibleAnnotations.stream().filter(annotationNode -> Type.getDescriptor(Mixture.class).equals(annotationNode.desc)).findFirst().orElseThrow(NullPointerException::new));
 		handlers = Collections.unmodifiableSet((Set<HandlerInfo>) classNode.methods.stream().filter(method -> method.invisibleAnnotations != null && method.invisibleAnnotations.stream().anyMatch(ann -> {
 			if (Mixtures.INJECTORS.containsKey(ann.desc)) {
-				String rawPredicate = AnnotationInfo.of(ann).get("predicate");
+				String rawPredicate = AnnotationInfo.of(ann).get("predicate", "");
 				return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
 			}
 			return false;

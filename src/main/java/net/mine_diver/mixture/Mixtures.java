@@ -1,10 +1,12 @@
 package net.mine_diver.mixture;
 
+import net.mine_diver.mixture.inject.Inject;
 import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.sarcasm.SarcASM;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -61,6 +63,7 @@ public final class Mixtures {
             }
             return Collections.unmodifiableSet(found);
         });
+        registerInjector(Inject.class, (mixedClassName, mixedMethod, handlerInfo) -> handlerInfo.forEach((handlerInfo1, abstractInsnNodes) -> abstractInsnNodes.forEach(abstractInsnNode -> mixedMethod.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, handlerInfo1.getMixtureInfo().classNode.name, handlerInfo1.methodNode.name, handlerInfo1.methodNode.desc)))));
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);

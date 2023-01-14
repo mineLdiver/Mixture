@@ -8,4 +8,8 @@ import java.lang.annotation.*;
 public @interface Inject {
 
     Reference method();
+
+    At at();
+
+    String predicate() default "";
 }

@@ -37,10 +37,12 @@ public final class MixtureTransformer implements ProxyTransformer {
 
 	@Override
 	public void transform(ClassNode node) {
+		info.handlers.stream().collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(Util::newIdentitySet))).forEach((s, handlerInfos) -> {
+			System.out.println(s);
+			node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> mix(null, methodNode, handlerInfos));
+		});
 		try {
-			File fileFile = new File(".", "test.class");
-			System.out.printf(fileFile.getAbsolutePath());
-			FileOutputStream file = new FileOutputStream(fileFile);
+			FileOutputStream file = new FileOutputStream(new File(".", "Target.class"));
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 			node.accept(writer);
 			file.write(writer.toByteArray());
@@ -89,7 +91,7 @@ public final class MixtureTransformer implements ProxyTransformer {
 	@SuppressWarnings("unchecked")
 	private static void mix(String mixedName, MethodNode methodToMix, Set<MixtureInfo.HandlerInfo> handlerInfos) {
 		Map<String, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
-		handlerInfos.stream().forEach(handlerInfo -> {
+		handlerInfos.forEach(handlerInfo -> {
 			AnnotationInfo at = handlerInfo.annotation.<AnnotationInfo>get("at");
 			Identifier point = Identifier.of(at.get("value"));
 			if (Mixtures.INJECTION_POINTS.containsKey(point))
@@ -97,6 +99,6 @@ public final class MixtureTransformer implements ProxyTransformer {
 			else
 				throw new IllegalStateException("Unknown InjectionPoint \"" + point + "\" in Mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
 		});
-//		injectorToHandlers.forEach((injector, handlers) -> Mixtures.INJECTORS.get(injector).inject(mixedName, methodToMix, handlers));
+		injectorToHandlers.forEach((injector, handlers) -> Mixtures.INJECTORS.get(injector).inject(mixedName, methodToMix, handlers));
 	}
 }
