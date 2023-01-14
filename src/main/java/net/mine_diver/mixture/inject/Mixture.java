@@ -3,9 +3,9 @@ package net.mine_diver.mixture.inject;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.CLASS)
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Documented
-public @interface Inject {
+public @interface Mixture {
 
-    Reference method();
+    Class<?> value();
 }

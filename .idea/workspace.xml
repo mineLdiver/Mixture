@@ -5,24 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Mixture.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/MixtureInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/At.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/HandlerInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/Inject.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/AnnotationInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/InjectionPoint.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Injector.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/MixtureTransformer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Mixtures.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/Mixture.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/Reference.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Identifier.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Namespace.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/NamespaceProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Util.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetInjector.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Mixture.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/MixtureInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/MixtureInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/HandlerInfo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/Inject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/Inject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,8 +59,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="AnnotationType" />
+        <option value="Interface" />
         <option value="Class" />
+        <option value="AnnotationType" />
       </list>
     </option>
   </component>
@@ -73,16 +79,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
   }
-}</component>
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Test" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="net.mine_diver.mixture.test.Main" />
+      <module name="Mixture.test" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -93,5 +109,26 @@
       <updated>1672866550764</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NullPointerException" package="java.lang" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
