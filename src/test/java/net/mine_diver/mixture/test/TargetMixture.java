@@ -1,9 +1,6 @@
 package net.mine_diver.mixture.test;
 
-import net.mine_diver.mixture.handler.At;
-import net.mine_diver.mixture.handler.Inject;
-import net.mine_diver.mixture.handler.Mixture;
-import net.mine_diver.mixture.handler.Reference;
+import net.mine_diver.mixture.handler.*;
 
 @Mixture(Target.class)
 public class TargetMixture {
@@ -13,10 +10,13 @@ public class TargetMixture {
             at = @At(
                     value = "mixture:injection_points/invoke",
                     target = @Reference("Ljava/io/PrintStream;println(Ljava/lang/String;)V"),
-                    ordinal = 1
+                    ordinal = 1,
+                    shift = At.Shift.AFTER
             )
     )
-    private void injectTest(boolean condition) {
+    private void injectTest(boolean condition, CallbackInfo ci) {
         System.out.println("YOOO! " + condition);
+        System.out.println("CallbackInfo: " + ci);
+        ci.cancel();
     }
 }

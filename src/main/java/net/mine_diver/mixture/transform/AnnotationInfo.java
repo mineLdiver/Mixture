@@ -1,10 +1,14 @@
 package net.mine_diver.mixture.transform;
 
-import java.util.*;
-
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.util.Identifier;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class AnnotationInfo {
 	
@@ -39,6 +43,18 @@ public final class AnnotationInfo {
 	public <T> T get(String key, T defaultValue) {
 		//noinspection unchecked
 		return (T) values.getOrDefault(key, defaultValue);
+	}
+
+	public <T extends Enum<T>> T getEnum(String key, T defaultValue) {
+		String[] rawValue = get(key, null);
+		if (rawValue == null)
+			return defaultValue;
+		try {
+			//noinspection unchecked
+			return Enum.valueOf((Class<T>) Class.forName(Type.getType(rawValue[0]).getClassName()), rawValue[1]);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public String getReference(String key) {

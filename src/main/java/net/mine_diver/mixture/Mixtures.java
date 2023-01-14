@@ -1,8 +1,10 @@
 package net.mine_diver.mixture;
 
 import net.mine_diver.mixture.handler.Inject;
+import net.mine_diver.mixture.inject.InjectInjector;
 import net.mine_diver.mixture.inject.InjectionPoint;
 import net.mine_diver.mixture.inject.Injector;
+import net.mine_diver.mixture.inject.InvokeInjectionPoint;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.transform.MixtureTransformer;
 import net.mine_diver.mixture.util.Identifier;
@@ -12,15 +14,11 @@ import net.mine_diver.sarcasm.SarcASM;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
@@ -64,30 +62,8 @@ public final class Mixtures implements NamespaceProvider {
     private static final Map<String, Injector> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
     static {
-        registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), (insns, at) -> {
-            String target = at.getReference("target");
-            int ordinal = at.get("ordinal", -1);
-            Set<MethodInsnNode> found = Util.newIdentitySet();
-            Iterator<AbstractInsnNode> iter = insns.iterator();
-            int cur = 0;
-            while (iter.hasNext()) {
-                AbstractInsnNode insn = iter.next();
-                if (insn instanceof MethodInsnNode && target.equals(ASMHelper.toTarget(((MethodInsnNode) insn))) && (ordinal == -1 || ordinal == cur++))
-                    found.add((MethodInsnNode) insn);
-            }
-            return Collections.unmodifiableSet(found);
-        });
-        registerInjector(Inject.class, (mixedClass, mixedMethod, handlerInfos) -> handlerInfos.forEach((handlerInfo, abstractInsnNodes) -> abstractInsnNodes.forEach(abstractInsnNode -> {
-            boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
-            if (!isStatic)
-                mixedMethod.instructions.insertBefore(abstractInsnNode, new VarInsnNode(Opcodes.ALOAD, 0));
-            Type[] argumentTypes = Type.getArgumentTypes(mixedMethod.desc);
-            for (int i = 0, argumentTypesLength = argumentTypes.length; i < argumentTypesLength; i++) {
-                Type argumentType = argumentTypes[i];
-                mixedMethod.instructions.insertBefore(abstractInsnNode, new VarInsnNode(argumentType.getOpcode(Opcodes.ILOAD), i + 1));
-            }
-            mixedMethod.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(isStatic ? Opcodes.INVOKESTATIC : Opcodes.INVOKEVIRTUAL, mixedClass.name, handlerInfo.methodNode.name, mixedMethod.desc));
-        })));
+        registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), new InvokeInjectionPoint());
+        registerInjector(Inject.class, new InjectInjector());
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);
