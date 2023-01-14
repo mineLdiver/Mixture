@@ -1,6 +1,7 @@
-package net.mine_diver.mixture;
+package net.mine_diver.mixture.transform;
 
-import net.mine_diver.mixture.inject.Mixture;
+import net.mine_diver.mixture.Mixtures;
+import net.mine_diver.mixture.handler.Mixture;
 import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.Util;
 import org.objectweb.asm.Type;
@@ -18,7 +19,7 @@ public final class MixtureInfo {
 	public final AnnotationInfo annotation;
 	public final Set<HandlerInfo> handlers;
 	
-	MixtureInfo(ClassNode classNode) {
+	public MixtureInfo(ClassNode classNode) {
 		this.classNode = classNode;
 		annotation = AnnotationInfo.of(classNode.invisibleAnnotations.stream().filter(annotationNode -> Type.getDescriptor(Mixture.class).equals(annotationNode.desc)).findFirst().orElseThrow(NullPointerException::new));
 		handlers = Collections.unmodifiableSet((Set<HandlerInfo>) classNode.methods.stream().filter(method -> method.invisibleAnnotations != null && method.invisibleAnnotations.stream().anyMatch(ann -> {

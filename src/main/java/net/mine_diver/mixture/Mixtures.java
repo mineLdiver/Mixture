@@ -1,7 +1,13 @@
 package net.mine_diver.mixture;
 
-import net.mine_diver.mixture.inject.Inject;
+import net.mine_diver.mixture.handler.Inject;
+import net.mine_diver.mixture.inject.InjectionPoint;
+import net.mine_diver.mixture.inject.Injector;
+import net.mine_diver.mixture.transform.MixtureInfo;
+import net.mine_diver.mixture.transform.MixtureTransformer;
 import net.mine_diver.mixture.util.Identifier;
+import net.mine_diver.mixture.util.Namespace;
+import net.mine_diver.mixture.util.NamespaceProvider;
 import net.mine_diver.sarcasm.SarcASM;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
@@ -11,17 +17,25 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-public final class Mixtures {
+public final class Mixtures implements NamespaceProvider {
     private Mixtures() {}
 
+    @Override
+    public String namespace() {
+        return "mixture";
+    }
+
+    public static final Namespace NAMESPACE = Namespace.of(new Mixtures());
     private static final Logger LOGGER = Logger.getLogger("Mixture");
     static {
         LOGGER.setUseParentHandlers(false);
@@ -50,7 +64,7 @@ public final class Mixtures {
     private static final Map<String, Injector> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
     static {
-        registerInjectionPoint(Identifier.of("injection_points:invoke"), (insns, at) -> {
+        registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), (insns, at) -> {
             String target = at.getReference("target");
             int ordinal = at.get("ordinal", -1);
             Set<MethodInsnNode> found = Util.newIdentitySet();
@@ -63,7 +77,17 @@ public final class Mixtures {
             }
             return Collections.unmodifiableSet(found);
         });
-        registerInjector(Inject.class, (mixedClassName, mixedMethod, handlerInfo) -> handlerInfo.forEach((handlerInfo1, abstractInsnNodes) -> abstractInsnNodes.forEach(abstractInsnNode -> mixedMethod.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(Opcodes.INVOKESTATIC, handlerInfo1.getMixtureInfo().classNode.name, handlerInfo1.methodNode.name, handlerInfo1.methodNode.desc)))));
+        registerInjector(Inject.class, (mixedClass, mixedMethod, handlerInfos) -> handlerInfos.forEach((handlerInfo, abstractInsnNodes) -> abstractInsnNodes.forEach(abstractInsnNode -> {
+            boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
+            if (!isStatic)
+                mixedMethod.instructions.insertBefore(abstractInsnNode, new VarInsnNode(Opcodes.ALOAD, 0));
+            Type[] argumentTypes = Type.getArgumentTypes(mixedMethod.desc);
+            for (int i = 0, argumentTypesLength = argumentTypes.length; i < argumentTypesLength; i++) {
+                Type argumentType = argumentTypes[i];
+                mixedMethod.instructions.insertBefore(abstractInsnNode, new VarInsnNode(argumentType.getOpcode(Opcodes.ILOAD), i + 1));
+            }
+            mixedMethod.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(isStatic ? Opcodes.INVOKESTATIC : Opcodes.INVOKEVIRTUAL, mixedClass.name, handlerInfo.methodNode.name, mixedMethod.desc));
+        })));
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);

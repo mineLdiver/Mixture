@@ -1,7 +1,8 @@
-package net.mine_diver.mixture;
+package net.mine_diver.mixture.transform;
 
 import java.util.*;
 
+import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.util.Identifier;
 import org.objectweb.asm.tree.AnnotationNode;
 
@@ -27,16 +28,16 @@ public final class AnnotationInfo {
 		this.node = node;
 		this.values = values;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public <T> T get(String key) {
 		if (values.containsKey(key))
+			//noinspection unchecked
 			return (T) values.get(key);
 		throw new IllegalStateException("There's no value \"" + key + "\" in annotation info \"" + this + "\"!");
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public <T> T get(String key, T defaultValue) {
+		//noinspection unchecked
 		return (T) values.getOrDefault(key, defaultValue);
 	}
 	

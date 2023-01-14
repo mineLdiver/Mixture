@@ -1,4 +1,4 @@
-package net.mine_diver.mixture.inject;
+package net.mine_diver.mixture.handler;
 
 import java.lang.annotation.*;
 
