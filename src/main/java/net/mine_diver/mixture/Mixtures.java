@@ -34,6 +34,7 @@ public final class Mixtures implements NamespaceProvider {
     }
 
     public static final Namespace NAMESPACE = Namespace.of(new Mixtures());
+    public static final boolean DEBUG_EXPORT = Boolean.getBoolean("mixture.debug.export");
     private static final Logger LOGGER = Logger.getLogger("Mixture");
     static {
         LOGGER.setUseParentHandlers(false);

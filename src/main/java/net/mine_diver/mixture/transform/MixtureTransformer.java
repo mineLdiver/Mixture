@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -50,14 +51,24 @@ public final class MixtureTransformer implements ProxyTransformer {
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
 			node.methods.add(mixtureNode);
 		});
-		try {
-			FileOutputStream file = new FileOutputStream(new File(".", "Target.class"));
+		if (Mixtures.DEBUG_EXPORT) {
+			File exportLoc = new File(".mixture.out/class/" + node.name + ".class");
+			//noinspection ResultOfMethodCallIgnored
+			exportLoc.getParentFile().mkdirs();
+			FileOutputStream file;
+			try {
+				file = new FileOutputStream(exportLoc);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			}
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 			node.accept(writer);
-			file.write(writer.toByteArray());
-			file.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+			try {
+				file.write(writer.toByteArray());
+				file.close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
