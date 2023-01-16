@@ -2,6 +2,7 @@ package net.mine_diver.mixture.transform;
 
 import lombok.RequiredArgsConstructor;
 import net.mine_diver.mixture.Mixtures;
+import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
@@ -34,17 +35,17 @@ public final class MixtureTransformer implements ProxyTransformer {
 	@Override
 	public void transform(ClassNode node) {
 		info.handlers.stream().collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
-			Map<String, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
+			Map<Injector, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
 			handlerInfos.forEach(handlerInfo -> {
 				AnnotationInfo at = handlerInfo.annotation.get("at");
 				Identifier point = Identifier.of(at.get("value"));
 				if (Mixtures.INJECTION_POINTS.containsKey(point))
 					//noinspection unchecked
-					injectorToHandlers.computeIfAbsent(handlerInfo.annotation.node.desc, s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
+					injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(handlerInfo.annotation.node.desc), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
 				else
 					throw new IllegalStateException("Unknown injection point \"" + point + "\" in mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
 			});
-			injectorToHandlers.forEach((injector, handlers) -> Mixtures.INJECTORS.get(injector).inject(node, methodNode, handlers));
+			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
 		}));
 		info.handlers.forEach(mixtureHandlerInfo -> {
 			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;

@@ -1,10 +1,8 @@
 package net.mine_diver.mixture;
 
 import net.mine_diver.mixture.handler.Inject;
-import net.mine_diver.mixture.inject.InjectInjector;
-import net.mine_diver.mixture.inject.InjectionPoint;
-import net.mine_diver.mixture.inject.Injector;
-import net.mine_diver.mixture.inject.InvokeInjectionPoint;
+import net.mine_diver.mixture.handler.Redirect;
+import net.mine_diver.mixture.inject.*;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.transform.MixtureTransformer;
 import net.mine_diver.mixture.util.Identifier;
@@ -65,6 +63,7 @@ public final class Mixtures implements NamespaceProvider {
     static {
         registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), new InvokeInjectionPoint());
         registerInjector(Inject.class, new InjectInjector());
+        registerInjector(Redirect.class, new RedirectInjector());
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);
