@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
+import net.mine_diver.mixture.util.Util;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
-import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -29,12 +29,18 @@ public final class MixtureTransformer implements ProxyTransformer {
 
 	@Override
 	public String[] getRequestedMethods() {
-		return info.handlers.stream().map(handlerInfo -> handlerInfo.annotation.getReference("method")).toArray(String[]::new);
+		return info.handlers.stream().filter(handlerInfo -> {
+			String rawPredicate = handlerInfo.annotation.get("predicate", "");
+			return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
+		}).map(handlerInfo -> handlerInfo.annotation.getReference("method")).toArray(String[]::new);
 	}
 
 	@Override
 	public void transform(ClassNode node) {
-		info.handlers.stream().collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
+		info.handlers.stream().filter(handlerInfo -> {
+			String rawPredicate = handlerInfo.annotation.get("predicate", "");
+			return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
+		}).collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
 			Map<Injector, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
 			handlerInfos.forEach(handlerInfo -> {
 				AnnotationInfo at = handlerInfo.annotation.get("at");

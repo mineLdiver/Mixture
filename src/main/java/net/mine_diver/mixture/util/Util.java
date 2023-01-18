@@ -1,9 +1,13 @@
 package net.mine_diver.mixture.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class Util {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Util {
 
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.isEmpty();
