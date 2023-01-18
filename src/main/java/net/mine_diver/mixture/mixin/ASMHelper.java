@@ -26,12 +26,6 @@ public final class ASMHelper {
     /**
      * Allocate a new local variable for the method
      *
-     * <p>Note that <b>allocating</b> a local differs from <em>extending</em>
-     * locals (see {@link #extendLocals()}) in that the allocation immediately
-     * increases the target max locals and returns the new index of the local
-     * just allocated. <b>Extending</b> locals is used for temporary localised
-     * extensions to the locals table for the purposes of injectors.</p>
-     *
      * @return the allocated local index
      */
     public static int allocateLocal(MethodNode method) {
@@ -41,12 +35,6 @@ public final class ASMHelper {
     /**
      * Allocate a number of new local variables for this method, returns the
      * first local variable index of the allocated range.
-     *
-     * <p>Note that <b>allocating</b> locals differs from <em>extending</em>
-     * locals (see {@link #extendLocals()}) in that the allocation immediately
-     * increases the target max locals and returns the new index of the local
-     * just allocated. <b>Extending</b> locals is used for temporary localised
-     * extensions to the locals table for the purposes of injectors.</p>
      *
      * @param method method node
      * @param locals number of locals to allocate

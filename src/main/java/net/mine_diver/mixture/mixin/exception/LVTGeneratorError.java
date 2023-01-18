@@ -25,8 +25,8 @@
 package net.mine_diver.mixture.mixin.exception;
 
 /**
- * Exception thrown when something goes horribly wrong whilst <del>summoning the
- * antichrist</del> generating the LVT for a target method.
+ * Exception thrown when something goes horribly wrong whilst ~~summoning the
+ * antichrist~~ generating the LVT for a target method.
  */
 public class LVTGeneratorError extends MixinError {
 
