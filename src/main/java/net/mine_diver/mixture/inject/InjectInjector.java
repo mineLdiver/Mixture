@@ -68,7 +68,5 @@ public final class InjectInjector implements Injector {
             mixedMethod.instructions.insert(injectionPoint, insns);
         else
             mixedMethod.instructions.insertBefore(injectionPoint, insns);
-        System.out.println("At inject");
-        System.out.println(Arrays.toString(Arrays.stream(Locals.getLocalsAt(mixedClass, mixedMethod, injectionPoint, Locals.Settings.DEFAULT)).map(localVariableNode -> localVariableNode == null ? "null" : localVariableNode.name).toArray(String[]::new)));
     }
 }

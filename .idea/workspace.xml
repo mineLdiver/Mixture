@@ -4,21 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Redirect injector and some refactor">
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/LocalCapture.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/ASMHelper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/Bytecode.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/FrameData.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/Locals.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/exception/LVTGeneratorError.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/exception/MixinError.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/Inject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/Inject.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/Redirect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/Redirect.java" afterDir="false" />
+    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Locals capture">
       <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +134,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673872434689</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Locals capture">
+      <created>1674032886879</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1674032886879</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -169,7 +163,8 @@
     <MESSAGE value="CallbackInfo for @Inject handlers, working Shift for inject handlers, general refactor" />
     <MESSAGE value="Proper debug" />
     <MESSAGE value="Redirect injector and some refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Redirect injector and some refactor" />
+    <MESSAGE value="Locals capture" />
+    <option name="LAST_COMMIT_MESSAGE" value="Locals capture" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
