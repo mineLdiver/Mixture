@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Remove debug print">
+    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Handler predicates">
+      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfoReturnable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/transform/MixtureTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/transform/MixtureTransformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Util.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +154,14 @@
       <option name="project" value="LOCAL" />
       <updated>1674032950583</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Handler predicates">
+      <created>1674062562575</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1674062562575</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -175,7 +185,8 @@
     <MESSAGE value="Redirect injector and some refactor" />
     <MESSAGE value="Locals capture" />
     <MESSAGE value="Remove debug print" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove debug print" />
+    <MESSAGE value="Handler predicates" />
+    <option name="LAST_COMMIT_MESSAGE" value="Handler predicates" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

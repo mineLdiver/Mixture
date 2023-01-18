@@ -52,4 +52,16 @@ public class TargetMixture {
     private void predicateTest(int one, int two, CallbackInfo ci, String local) {
         System.out.println("what!??!?!");
     }
+
+    @Inject(
+            method = @Reference("testReturnable()Ljava/lang/String;"),
+            at = @At(
+                    value = "mixture:injection_points/invoke",
+                    target = @Reference("Ljava/util/Random;nextInt()I"),
+                    ordinal = 0
+            )
+    )
+    private void cirTest(CallbackInfoReturnable<String> cir) {
+        cir.setReturnValue("Success!");
+    }
 }

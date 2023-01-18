@@ -2,6 +2,7 @@ package net.mine_diver.mixture.inject;
 
 import net.mine_diver.mixture.handler.At;
 import net.mine_diver.mixture.handler.CallbackInfo;
+import net.mine_diver.mixture.handler.CallbackInfoReturnable;
 import net.mine_diver.mixture.handler.LocalCapture;
 import net.mine_diver.mixture.mixin.ASMHelper;
 import net.mine_diver.mixture.mixin.Bytecode;
@@ -22,6 +23,7 @@ import static org.objectweb.asm.Opcodes.*;
 public final class InjectInjector implements Injector {
 
     private static final Type CALLBACKINFO_TYPE = Type.getType(CallbackInfo.class);
+    private static final Type CALLBACKINFORETURNABLE_TYPE = Type.getType(CallbackInfoReturnable.class);
 
     @Override
     public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo handlerInfo, AbstractInsnNode injectionPoint) {
@@ -34,15 +36,18 @@ public final class InjectInjector implements Injector {
             Type argumentType = argumentTypes[i];
             insns.add(new VarInsnNode(argumentType.getOpcode(ILOAD), i + 1));
         }
-        Type[] handlerArgs = Util.concat(argumentTypes, CALLBACKINFO_TYPE);
+        Type returnType = Type.getReturnType(mixedMethod.desc);
+        boolean returnVoid = Type.VOID_TYPE == returnType;
+        Type callbackInfoType = returnVoid ? CALLBACKINFO_TYPE : CALLBACKINFORETURNABLE_TYPE;
+        Type[] handlerArgs = Util.concat(argumentTypes, callbackInfoType);
         int callbackOrdinal = handlerArgs.length;
         boolean usesCallbackInfo = StreamSupport.stream(handlerInfo.methodNode.instructions.spliterator(), false).anyMatch(abstractInsnNode1 -> abstractInsnNode1 instanceof VarInsnNode && abstractInsnNode1.getOpcode() == ALOAD && ((VarInsnNode) abstractInsnNode1).var == callbackOrdinal);
         LocalVariableNode callbackInfoVar = null;
         if (usesCallbackInfo) {
-            insns.add(new TypeInsnNode(NEW, CALLBACKINFO_TYPE.getInternalName()));
+            insns.add(new TypeInsnNode(NEW, callbackInfoType.getInternalName()));
             insns.add(new InsnNode(DUP));
-            insns.add(new MethodInsnNode(INVOKESPECIAL, CALLBACKINFO_TYPE.getInternalName(), "<init>", "()V"));
-            callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, index -> "callbackInfo" + index, Type.getDescriptor(CallbackInfo.class));
+            insns.add(new MethodInsnNode(INVOKESPECIAL, callbackInfoType.getInternalName(), "<init>", "()V"));
+            callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, index -> "callbackInfo" + index, callbackInfoType.getDescriptor());
             insns.add(new VarInsnNode(ASTORE, callbackInfoVar.index));
             insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
         } else
@@ -58,10 +63,17 @@ public final class InjectInjector implements Injector {
         insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
         if (usesCallbackInfo) {
             insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
-            insns.add(new MethodInsnNode(INVOKEVIRTUAL, CALLBACKINFO_TYPE.getInternalName(), "isCanceled", "()Z"));
+            insns.add(new MethodInsnNode(INVOKEVIRTUAL, callbackInfoType.getInternalName(), "isCanceled", "()Z"));
             LabelNode elseLabel = new LabelNode();
             insns.add(new JumpInsnNode(IFEQ, elseLabel));
-            insns.add(new InsnNode(Type.getReturnType(mixedMethod.desc).getOpcode(IRETURN)));
+            if (!returnVoid) {
+                insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
+                boolean object = returnType.getSort() == Type.OBJECT;
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, callbackInfoType.getInternalName(), "getReturnValue" + (object ? "" : returnType.getDescriptor()), "()" + (object ? Type.getDescriptor(Object.class) : returnType.getDescriptor())));
+                if (object)
+                    insns.add(new TypeInsnNode(CHECKCAST, returnType.getInternalName()));
+            }
+            insns.add(new InsnNode(returnType.getOpcode(IRETURN)));
             insns.add(elseLabel);
         }
         if (handlerInfo.annotation.<AnnotationInfo>get("at").getEnum("shift", At.Shift.UNSET) == At.Shift.AFTER)

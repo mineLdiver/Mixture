@@ -1,5 +1,7 @@
 package net.mine_diver.mixture.test;
 
+import java.util.Random;
+
 public class Target {
 
     public static final Target INSTANCE = new Target();
@@ -22,5 +24,12 @@ public class Target {
             System.out.println(message);
         }
         System.out.println("Oh, well, that's it I guess. " + butwhatif);
+    }
+
+    public String testReturnable() {
+        Random random = new Random();
+        int a = random.nextInt();
+        int b = a ^ random.nextInt();
+        return Integer.toHexString(a) + Integer.toBinaryString(a & ~b);
     }
 }

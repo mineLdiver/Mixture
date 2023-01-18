@@ -9,8 +9,10 @@ public class Main {
         SarcASM.registerInjector(Target.class, new TargetInjector());
         Target.INSTANCE.test(true);
         Target.INSTANCE.test(false);
+        System.out.println(Target.INSTANCE.testReturnable());
         Mixtures.register(TargetMixture.class);
         Target.INSTANCE.test(true);
         Target.INSTANCE.test(false);
+        System.out.println(Target.INSTANCE.testReturnable());
     }
 }

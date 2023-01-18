@@ -1,6 +1,6 @@
 package net.mine_diver.mixture.handler;
 
-public final class CallbackInfo {
+public class CallbackInfo {
 
     private boolean canceled;
 
