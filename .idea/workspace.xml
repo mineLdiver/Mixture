@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Handler predicates">
-      <change afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfoReturnable.java" afterDir="false" />
+    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="CallbackInfoReturnable">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/handler/CallbackInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/Target.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,12 +21,26 @@
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="Mixture" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Mixture" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Mixture" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -76,7 +85,7 @@
     "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Gradle.Mixture [build]">
     <configuration name="Test" type="Application" factoryName="Application">
       <envs>
         <env name="mixture.debug.export" value="true" />
@@ -88,6 +97,36 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Mixture [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.Test" />
+      <item itemvalue="Gradle.Mixture [build]" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.Mixture [build]" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -161,7 +200,14 @@
       <option name="project" value="LOCAL" />
       <updated>1674062562575</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="CallbackInfoReturnable">
+      <created>1674070706361</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1674070706361</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -186,7 +232,8 @@
     <MESSAGE value="Locals capture" />
     <MESSAGE value="Remove debug print" />
     <MESSAGE value="Handler predicates" />
-    <option name="LAST_COMMIT_MESSAGE" value="Handler predicates" />
+    <MESSAGE value="CallbackInfoReturnable" />
+    <option name="LAST_COMMIT_MESSAGE" value="CallbackInfoReturnable" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
