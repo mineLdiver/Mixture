@@ -32,7 +32,7 @@ public class TargetMixture {
             ),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    private void redirectTest(PrintStream stream, Object message, int neverusedagain, int butwhatif, String oneFalse) {
+    private void redirectTest(PrintStream stream, Object message, boolean condition, int neverusedagain, int butwhatif, String oneFalse) {
         System.out.println(stream + " " + message.toString());
         System.out.println("Lol got a funny toString: " + message.getClass().getName() + "@" + Integer.toHexString(message.hashCode()));
         System.out.println("Local: " + oneFalse);

@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="CallbackInfoReturnable">
+    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Fixup some source">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,7 +86,7 @@
     "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
   }
 }]]></component>
-  <component name="RunManager" selected="Gradle.Mixture [build]">
+  <component name="RunManager" selected="Application.Test">
     <configuration name="Test" type="Application" factoryName="Application">
       <envs>
         <env name="mixture.debug.export" value="true" />
@@ -207,7 +208,21 @@
       <option name="project" value="LOCAL" />
       <updated>1674070706361</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Sources jar">
+      <created>1674071045174</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1674071045174</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Fixup some source">
+      <created>1674071161426</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1674071161426</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -233,7 +248,9 @@
     <MESSAGE value="Remove debug print" />
     <MESSAGE value="Handler predicates" />
     <MESSAGE value="CallbackInfoReturnable" />
-    <option name="LAST_COMMIT_MESSAGE" value="CallbackInfoReturnable" />
+    <MESSAGE value="Sources jar" />
+    <MESSAGE value="Fixup some source" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixup some source" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
