@@ -1,5 +1,9 @@
 package net.mine_diver.mixture.inject;
 
+import net.mine_diver.mixture.handler.LocalCapture;
+import net.mine_diver.mixture.mixin.ASMHelper;
+import net.mine_diver.mixture.mixin.Bytecode;
+import net.mine_diver.mixture.mixin.Locals;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.util.Util;
 import org.objectweb.asm.Opcodes;
@@ -7,6 +11,10 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Objects;
+
+import static org.objectweb.asm.Opcodes.ILOAD;
 
 public final class RedirectInjector implements Injector {
 
@@ -22,16 +30,23 @@ public final class RedirectInjector implements Injector {
                 if (!isStaticInvoke)
                     argumentTypes = Util.concat(Type.getObjectType(insn.owner), argumentTypes);
                 int curArg = mixedMethod.maxLocals;
-                mixedMethod.maxLocals += argumentTypes.length;
-                for (int i = argumentTypes.length - 1; i >= 0; i--) {
-                    Type argumentType = argumentTypes[i];
-                    insns.add(new VarInsnNode(argumentType.getOpcode(Opcodes.ISTORE), mixedMethod.maxLocals - argumentTypes.length + i));
-                }
+                for (Type argumentType : argumentTypes)
+                    ASMHelper.addLocalVariable(mixedMethod, argumentType.getDescriptor());
+                for (int i = argumentTypes.length - 1; i >= 0; i--)
+                    insns.add(new VarInsnNode(argumentTypes[i].getOpcode(Opcodes.ISTORE), mixedMethod.maxLocals - argumentTypes.length + i));
                 if (!isStatic)
                     insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
                 for (Type argumentType : argumentTypes)
                     insns.add(new VarInsnNode(argumentType.getOpcode(Opcodes.ILOAD), curArg++));
-                insns.add(new MethodInsnNode(isStatic ? Opcodes.INVOKESTATIC : Opcodes.INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, Type.getMethodDescriptor(Type.getReturnType(insn.desc), argumentTypes)));
+                if (handlerInfo.annotation.getEnum("locals", LocalCapture.NO_CAPTURE).isCaptureLocals()) {
+                    LocalVariableNode[] locals = Arrays.stream(Locals.getLocalsAt(mixedClass, mixedMethod, injectionPoint, Locals.Settings.DEFAULT)).filter(Objects::nonNull).toArray(LocalVariableNode[]::new);
+                    Type[] actualHandlerArgs = Type.getArgumentTypes(handlerInfo.methodNode.desc);
+                    LocalVariableNode[] requestedLocals = new LocalVariableNode[actualHandlerArgs.length - argumentTypes.length];
+                    System.arraycopy(locals, Bytecode.getFirstNonArgLocalIndex(mixedMethod), requestedLocals, 0, requestedLocals.length);
+                    for (LocalVariableNode requestedLocal : requestedLocals)
+                        insns.add(new VarInsnNode(Type.getType(requestedLocal.desc).getOpcode(ILOAD), requestedLocal.index));
+                }
+                insns.add(new MethodInsnNode(isStatic ? Opcodes.INVOKESTATIC : Opcodes.INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
                 mixedMethod.instructions.insertBefore(injectionPoint, insns);
                 mixedMethod.instructions.remove(injectionPoint);
                 break;

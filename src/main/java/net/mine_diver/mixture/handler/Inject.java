@@ -9,5 +9,6 @@ public @interface Inject {
 
     Reference method();
     At at();
+    LocalCapture locals() default LocalCapture.NO_CAPTURE;
     String predicate() default "";
 }

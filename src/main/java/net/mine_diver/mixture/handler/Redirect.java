@@ -9,6 +9,6 @@ public @interface Redirect {
 
 	Reference method();
 	At at();
-	boolean locals() default false;
+	LocalCapture locals() default LocalCapture.NO_CAPTURE;
 	String predicate() default "";
 }

@@ -2,6 +2,10 @@ package net.mine_diver.mixture.inject;
 
 import net.mine_diver.mixture.handler.At;
 import net.mine_diver.mixture.handler.CallbackInfo;
+import net.mine_diver.mixture.handler.LocalCapture;
+import net.mine_diver.mixture.mixin.ASMHelper;
+import net.mine_diver.mixture.mixin.Bytecode;
+import net.mine_diver.mixture.mixin.Locals;
 import net.mine_diver.mixture.transform.AnnotationInfo;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.util.Util;
@@ -9,6 +13,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -31,19 +37,27 @@ public final class InjectInjector implements Injector {
         Type[] handlerArgs = Util.concat(argumentTypes, CALLBACKINFO_TYPE);
         int callbackOrdinal = handlerArgs.length;
         boolean usesCallbackInfo = StreamSupport.stream(handlerInfo.methodNode.instructions.spliterator(), false).anyMatch(abstractInsnNode1 -> abstractInsnNode1 instanceof VarInsnNode && abstractInsnNode1.getOpcode() == ALOAD && ((VarInsnNode) abstractInsnNode1).var == callbackOrdinal);
-        int callbackInfoVar = -1;
+        LocalVariableNode callbackInfoVar = null;
         if (usesCallbackInfo) {
             insns.add(new TypeInsnNode(NEW, CALLBACKINFO_TYPE.getInternalName()));
             insns.add(new InsnNode(DUP));
             insns.add(new MethodInsnNode(INVOKESPECIAL, CALLBACKINFO_TYPE.getInternalName(), "<init>", "()V"));
-            callbackInfoVar = mixedMethod.maxLocals++;
-            insns.add(new VarInsnNode(ASTORE, callbackInfoVar));
-            insns.add(new VarInsnNode(ALOAD, callbackInfoVar));
+            callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, index -> "callbackInfo" + index, Type.getDescriptor(CallbackInfo.class));
+            insns.add(new VarInsnNode(ASTORE, callbackInfoVar.index));
+            insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
         } else
             insns.add(new InsnNode(ACONST_NULL));
-        insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, Type.getMethodDescriptor(Type.VOID_TYPE, handlerArgs)));
+        if (handlerInfo.annotation.getEnum("locals", LocalCapture.NO_CAPTURE).isCaptureLocals()) {
+            LocalVariableNode[] locals = Arrays.stream(Locals.getLocalsAt(mixedClass, mixedMethod, injectionPoint, Locals.Settings.DEFAULT)).filter(Objects::nonNull).toArray(LocalVariableNode[]::new);
+            Type[] actualHandlerArgs = Type.getArgumentTypes(handlerInfo.methodNode.desc);
+            LocalVariableNode[] requestedLocals = new LocalVariableNode[actualHandlerArgs.length - handlerArgs.length];
+            System.arraycopy(locals, Bytecode.getFirstNonArgLocalIndex(mixedMethod), requestedLocals, 0, requestedLocals.length);
+            for (LocalVariableNode requestedLocal : requestedLocals)
+                insns.add(new VarInsnNode(Type.getType(requestedLocal.desc).getOpcode(ILOAD), requestedLocal.index));
+        }
+        insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
         if (usesCallbackInfo) {
-            insns.add(new VarInsnNode(ALOAD, callbackInfoVar));
+            insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
             insns.add(new MethodInsnNode(INVOKEVIRTUAL, CALLBACKINFO_TYPE.getInternalName(), "isCanceled", "()Z"));
             LabelNode elseLabel = new LabelNode();
             insns.add(new JumpInsnNode(IFEQ, elseLabel));
@@ -54,5 +68,7 @@ public final class InjectInjector implements Injector {
             mixedMethod.instructions.insert(injectionPoint, insns);
         else
             mixedMethod.instructions.insertBefore(injectionPoint, insns);
+        System.out.println("At inject");
+        System.out.println(Arrays.toString(Arrays.stream(Locals.getLocalsAt(mixedClass, mixedMethod, injectionPoint, Locals.Settings.DEFAULT)).map(localVariableNode -> localVariableNode == null ? "null" : localVariableNode.name).toArray(String[]::new)));
     }
 }
