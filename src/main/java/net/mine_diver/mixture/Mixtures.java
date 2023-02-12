@@ -55,7 +55,7 @@ public final class Mixtures implements NamespaceProvider {
         LOGGER.addHandler(handler);
     }
 
-    private static final Map<Class<?>, Set<Class<?>>> MIXTURES = new IdentityHashMap<>();
+    private static final Map<Class<?>, MixtureTransformer> MIXTURES = new IdentityHashMap<>();
     private static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS_MUTABLE = new IdentityHashMap<>();
     private static final Map<String, Injector> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
@@ -73,11 +73,18 @@ public final class Mixtures implements NamespaceProvider {
         ClassNode mixtureNode = new ClassNode();
         new ClassReader(ASMHelper.readClassBytes(mixture)).accept(mixtureNode, ClassReader.EXPAND_FRAMES);
         MixtureInfo info = new MixtureInfo(mixtureNode);
+        Class<?> target;
         try {
-            SarcASM.registerTransformer(Class.forName(((Type) info.annotation.get("value")).getClassName()), new MixtureTransformer(info));
+            target = Class.forName(((Type) info.annotation.get("value")).getClassName());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+        MIXTURES.computeIfAbsent(target, aClass -> {
+            MixtureTransformer transformer = new MixtureTransformer();
+            SarcASM.registerTransformer(aClass, transformer);
+            return transformer;
+        }).info.add(info);
+        SarcASM.initProxyFor(target);
     }
 
     public static <T extends AbstractInsnNode> void registerInjectionPoint(Identifier identifier, InjectionPoint<T> point) {

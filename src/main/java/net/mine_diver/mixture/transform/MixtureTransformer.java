@@ -1,6 +1,5 @@
 package net.mine_diver.mixture.transform;
 
-import lombok.RequiredArgsConstructor;
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
@@ -17,14 +16,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public final class MixtureTransformer implements ProxyTransformer {
 
-	public final MixtureInfo info;
+	public final Set<MixtureInfo> info = net.mine_diver.sarcasm.util.Util.newIdentitySet();
 
 	@Override
 	public String[] getRequestedMethods() {
-		return info.handlers.stream().filter(handlerInfo -> {
+		return info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
 			String rawPredicate = handlerInfo.annotation.get("predicate", "");
 			return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
 		}).map(handlerInfo -> handlerInfo.annotation.getReference("method")).toArray(String[]::new);
@@ -32,7 +30,7 @@ public final class MixtureTransformer implements ProxyTransformer {
 
 	@Override
 	public void transform(ClassNode node) {
-		info.handlers.stream().filter(handlerInfo -> {
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
 			String rawPredicate = handlerInfo.annotation.get("predicate", "");
 			return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
 		}).collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
@@ -48,7 +46,7 @@ public final class MixtureTransformer implements ProxyTransformer {
 			});
 			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
 		}));
-		info.handlers.forEach(mixtureHandlerInfo -> {
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).forEach(mixtureHandlerInfo -> {
 			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
 			node.methods.add(mixtureNode);
