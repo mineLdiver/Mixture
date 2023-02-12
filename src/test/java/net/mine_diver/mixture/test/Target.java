@@ -6,6 +6,8 @@ public class Target {
 
     public static final Target INSTANCE = new Target();
 
+    public int testField = 42;
+
     private Target() {}
     
     public void test(boolean condition) {
@@ -24,6 +26,9 @@ public class Target {
             System.out.println(message);
         }
         System.out.println("Oh, well, that's it I guess. " + butwhatif);
+        System.out.println(testField);
+        testField += 20;
+        System.out.println(testField);
     }
 
     public String testReturnable() {

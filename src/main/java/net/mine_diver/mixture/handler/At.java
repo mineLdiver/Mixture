@@ -14,6 +14,7 @@ public @interface At {
 	Reference target() default @Reference("");
 	Shift shift() default Shift.UNSET;
 	int ordinal() default -1;
+	int opcode() default -1;
 	
 	enum Shift {
 		BEFORE,

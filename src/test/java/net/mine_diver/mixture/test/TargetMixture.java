@@ -1,6 +1,7 @@
 package net.mine_diver.mixture.test;
 
 import net.mine_diver.mixture.handler.*;
+import org.objectweb.asm.Opcodes;
 
 import java.io.PrintStream;
 
@@ -63,5 +64,36 @@ public class TargetMixture {
     )
     private void cirTest(CallbackInfoReturnable<String> cir) {
         cir.setReturnValue("Success!");
+    }
+
+    @Redirect(
+            method = @Reference("test(Z)V"),
+            at = @At(
+                    value = "mixture:injection_points/field",
+                    target = @Reference("Lnet/mine_diver/mixture/test/Target;testField:I"),
+                    opcode = Opcodes.GETFIELD,
+                    ordinal = 0
+            )
+    )
+    private int redirectTestField(Target instance) {
+        return 20;
+    }
+
+    @Redirect(
+            method = @Reference("test(Z)V"),
+            at = @At(
+                    value = "mixture:injection_points/field",
+                    target = @Reference("Lnet/mine_diver/mixture/test/Target;testField:I"),
+                    opcode = Opcodes.PUTFIELD
+            )
+    )
+    private void redirectTestField(Target instance, int value) {}
+
+    @Inject(
+            method = @Reference("test(Z)V"),
+            at = @At("mixture:injection_points/head")
+    )
+    private void onStart(boolean condition, CallbackInfo ci) {
+        System.out.println("Ayy, start of a method!");
     }
 }

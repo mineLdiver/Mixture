@@ -60,6 +60,8 @@ public final class Mixtures implements NamespaceProvider {
     private static final Map<String, Injector> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
     static {
+        registerInjectionPoint(NAMESPACE.id("injection_points/head"), new HeadInjectionPoint());
+        registerInjectionPoint(NAMESPACE.id("injection_points/field"), new FieldInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), new InvokeInjectionPoint());
         registerInjector(Inject.class, new InjectInjector());
         registerInjector(Redirect.class, new RedirectInjector());
