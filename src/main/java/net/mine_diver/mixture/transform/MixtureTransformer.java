@@ -51,6 +51,7 @@ public final class MixtureTransformer implements ProxyTransformer {
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
 			node.methods.add(mixtureNode);
 		});
+		info.forEach(mixtureInfo -> node.fields.addAll(mixtureInfo.classNode.fields));
 	}
 
 }
