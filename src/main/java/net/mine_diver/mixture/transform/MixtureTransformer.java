@@ -6,15 +6,16 @@ import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.Util;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.objectweb.asm.tree.AbstractInsnNode.FIELD_INSN;
+import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 
 public final class MixtureTransformer implements ProxyTransformer {
 
@@ -49,6 +50,20 @@ public final class MixtureTransformer implements ProxyTransformer {
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).forEach(mixtureHandlerInfo -> {
 			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
+			mixtureNode.instructions.forEach(abstractInsnNode -> {
+				switch (abstractInsnNode.getType()) {
+					case METHOD_INSN:
+						MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
+						if (methodInsn.owner.equals(mixtureHandlerInfo.getMixtureInfo().classNode.name))
+							methodInsn.owner = node.name;
+						break;
+					case FIELD_INSN:
+						FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
+						if (fieldInsn.owner.equals(mixtureHandlerInfo.getMixtureInfo().classNode.name))
+							fieldInsn.owner = node.name;
+						break;
+				}
+			});
 			node.methods.add(mixtureNode);
 		});
 		info.forEach(mixtureInfo -> node.fields.addAll(mixtureInfo.classNode.fields));
