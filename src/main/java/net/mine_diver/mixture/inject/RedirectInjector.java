@@ -1,11 +1,11 @@
 package net.mine_diver.mixture.inject;
 
 import net.mine_diver.mixture.handler.LocalCapture;
-import net.mine_diver.mixture.mixin.ASMHelper;
-import net.mine_diver.mixture.mixin.Bytecode;
-import net.mine_diver.mixture.mixin.Locals;
 import net.mine_diver.mixture.transform.MixtureInfo;
-import net.mine_diver.mixture.util.Util;
+import net.mine_diver.sarcasm.util.ASMHelper;
+import net.mine_diver.sarcasm.util.Bytecode;
+import net.mine_diver.sarcasm.util.Locals;
+import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 

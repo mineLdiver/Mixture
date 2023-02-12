@@ -4,12 +4,12 @@ import net.mine_diver.mixture.handler.At;
 import net.mine_diver.mixture.handler.CallbackInfo;
 import net.mine_diver.mixture.handler.CallbackInfoReturnable;
 import net.mine_diver.mixture.handler.LocalCapture;
-import net.mine_diver.mixture.mixin.ASMHelper;
-import net.mine_diver.mixture.mixin.Bytecode;
-import net.mine_diver.mixture.mixin.Locals;
 import net.mine_diver.mixture.transform.AnnotationInfo;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.util.Util;
+import net.mine_diver.sarcasm.util.ASMHelper;
+import net.mine_diver.sarcasm.util.Bytecode;
+import net.mine_diver.sarcasm.util.Locals;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 

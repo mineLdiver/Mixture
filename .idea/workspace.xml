@@ -4,10 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Fixup some source">
+    <list default="true" id="f51d62ba-145e-4956-9028-1e87b5b592f8" name="Changes" comment="Added method args to RedirectInjector">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Mixtures.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/Mixtures.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/InjectInjector.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/inject/RedirectInjector.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/net/mine_diver/mixture/test/TargetMixture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/ASMHelper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/Bytecode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/FrameData.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/Locals.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/exception/LVTGeneratorError.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/mixin/exception/MixinError.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/transform/MixtureTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/transform/MixtureTransformer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/mine_diver/mixture/util/Util.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,26 +85,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Application.Test">
     <configuration name="Test" type="Application" factoryName="Application">
-      <envs>
-        <env name="mixture.debug.export" value="true" />
-      </envs>
       <option name="MAIN_CLASS_NAME" value="net.mine_diver.mixture.test.Main" />
       <module name="Mixture.test" />
-      <option name="VM_PARAMETERS" value="-Dmixture.debug.export=true" />
+      <option name="VM_PARAMETERS" value="-Dsarcasm.debug.export=true" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -222,7 +230,14 @@
       <option name="project" value="LOCAL" />
       <updated>1674071161426</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Added method args to RedirectInjector">
+      <created>1674077677870</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1674077677870</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -250,7 +265,8 @@
     <MESSAGE value="CallbackInfoReturnable" />
     <MESSAGE value="Sources jar" />
     <MESSAGE value="Fixup some source" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixup some source" />
+    <MESSAGE value="Added method args to RedirectInjector" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added method args to RedirectInjector" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

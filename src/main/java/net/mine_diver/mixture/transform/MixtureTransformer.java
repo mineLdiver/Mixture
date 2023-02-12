@@ -7,15 +7,10 @@ import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.Util;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -58,25 +53,6 @@ public final class MixtureTransformer implements ProxyTransformer {
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
 			node.methods.add(mixtureNode);
 		});
-		if (Mixtures.DEBUG_EXPORT) {
-			File exportLoc = new File(".mixture.out/class/" + node.name + ".class");
-			//noinspection ResultOfMethodCallIgnored
-			exportLoc.getParentFile().mkdirs();
-			FileOutputStream file;
-			try {
-				file = new FileOutputStream(exportLoc);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-			node.accept(writer);
-			try {
-				file.write(writer.toByteArray());
-				file.close();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
 	}
 
 }
