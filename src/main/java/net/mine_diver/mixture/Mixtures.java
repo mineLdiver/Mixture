@@ -32,7 +32,7 @@ public final class Mixtures implements NamespaceProvider {
     }
 
     public static final Namespace NAMESPACE = Namespace.of(new Mixtures());
-    private static final Logger LOGGER = Logger.getLogger("Mixture");
+    public static final Logger LOGGER = Logger.getLogger("Mixture");
     static {
         LOGGER.setUseParentHandlers(false);
         ConsoleHandler handler = new ConsoleHandler();

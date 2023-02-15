@@ -3,7 +3,7 @@ package net.mine_diver.mixture.transform;
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.handler.Mixture;
 import net.mine_diver.mixture.util.Identifier;
-import net.mine_diver.mixture.util.Util;
+import net.mine_diver.mixture.util.MixtureUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -25,7 +25,7 @@ public final class MixtureInfo {
 		handlers = Collections.unmodifiableSet((Set<HandlerInfo>) classNode.methods.stream().filter(method -> method.invisibleAnnotations != null && method.invisibleAnnotations.stream().anyMatch(ann -> {
 			if (Mixtures.INJECTORS.containsKey(ann.desc)) {
 				String rawPredicate = AnnotationInfo.of(ann).get("predicate", "");
-				return Util.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
+				return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
 			}
 			return false;
 		})).map(HandlerInfo::new).collect(Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet)));

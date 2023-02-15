@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import java.util.Arrays;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Util {
+public final class MixtureUtils {
 
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.isEmpty();

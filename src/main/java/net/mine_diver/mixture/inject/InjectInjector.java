@@ -3,19 +3,14 @@ package net.mine_diver.mixture.inject;
 import net.mine_diver.mixture.handler.At;
 import net.mine_diver.mixture.handler.CallbackInfo;
 import net.mine_diver.mixture.handler.CallbackInfoReturnable;
-import net.mine_diver.mixture.handler.LocalCapture;
 import net.mine_diver.mixture.transform.AnnotationInfo;
 import net.mine_diver.mixture.transform.MixtureInfo;
-import net.mine_diver.mixture.util.Util;
+import net.mine_diver.mixture.util.MixtureUtils;
 import net.mine_diver.sarcasm.util.ASMHelper;
-import net.mine_diver.sarcasm.util.Bytecode;
-import net.mine_diver.sarcasm.util.Locals;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.stream.StreamSupport;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -32,14 +27,16 @@ public final class InjectInjector implements Injector {
         if (!isStatic)
             insns.add(new VarInsnNode(ALOAD, 0));
         Type[] argumentTypes = Type.getArgumentTypes(mixedMethod.desc);
-        for (int i = 0, argumentTypesLength = argumentTypes.length; i < argumentTypesLength; i++) {
-            Type argumentType = argumentTypes[i];
-            insns.add(new VarInsnNode(argumentType.getOpcode(ILOAD), i + 1));
+        int index = 0;
+        for (Type methodArg : argumentTypes) {
+            int opcode = methodArg.getOpcode(ILOAD);
+            insns.add(new VarInsnNode(opcode, isStatic ? index : index + 1));
+            index += methodArg.getSize();
         }
         Type returnType = Type.getReturnType(mixedMethod.desc);
         boolean returnVoid = Type.VOID_TYPE == returnType;
         Type callbackInfoType = returnVoid ? CALLBACKINFO_TYPE : CALLBACKINFORETURNABLE_TYPE;
-        Type[] handlerArgs = Util.concat(argumentTypes, callbackInfoType);
+        Type[] handlerArgs = MixtureUtils.concat(argumentTypes, callbackInfoType);
         int callbackOrdinal = handlerArgs.length;
         boolean usesCallbackInfo = StreamSupport.stream(handlerInfo.methodNode.instructions.spliterator(), false).anyMatch(abstractInsnNode1 -> abstractInsnNode1 instanceof VarInsnNode && abstractInsnNode1.getOpcode() == ALOAD && ((VarInsnNode) abstractInsnNode1).var == callbackOrdinal);
         LocalVariableNode callbackInfoVar = null;
@@ -47,19 +44,12 @@ public final class InjectInjector implements Injector {
             insns.add(new TypeInsnNode(NEW, callbackInfoType.getInternalName()));
             insns.add(new InsnNode(DUP));
             insns.add(new MethodInsnNode(INVOKESPECIAL, callbackInfoType.getInternalName(), "<init>", "()V"));
-            callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, index -> "callbackInfo" + index, callbackInfoType.getDescriptor());
+            callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, varIndex -> "callbackInfo" + varIndex, callbackInfoType.getDescriptor());
             insns.add(new VarInsnNode(ASTORE, callbackInfoVar.index));
             insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
         } else
             insns.add(new InsnNode(ACONST_NULL));
-        if (handlerInfo.annotation.getEnum("locals", LocalCapture.NO_CAPTURE).isCaptureLocals()) {
-            LocalVariableNode[] locals = Arrays.stream(Locals.getLocalsAt(mixedClass, mixedMethod, injectionPoint, Locals.Settings.DEFAULT)).filter(Objects::nonNull).toArray(LocalVariableNode[]::new);
-            Type[] actualHandlerArgs = Type.getArgumentTypes(handlerInfo.methodNode.desc);
-            LocalVariableNode[] requestedLocals = new LocalVariableNode[actualHandlerArgs.length - handlerArgs.length];
-            System.arraycopy(locals, Bytecode.getFirstNonArgLocalIndex(mixedMethod), requestedLocals, 0, requestedLocals.length);
-            for (LocalVariableNode requestedLocal : requestedLocals)
-                insns.add(new VarInsnNode(Type.getType(requestedLocal.desc).getOpcode(ILOAD), requestedLocal.index));
-        }
+        Injectors.locals(handlerInfo, insns, mixedClass, mixedMethod, injectionPoint, index + 1);
         insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
         if (usesCallbackInfo) {
             insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
