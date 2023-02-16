@@ -31,22 +31,10 @@ public final class MixtureTransformer implements ProxyTransformer {
 
 	@Override
 	public void transform(ClassNode node) {
-		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
-			String rawPredicate = handlerInfo.annotation.get("predicate", "");
-			return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
-		}).collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
-			Map<Injector, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
-			handlerInfos.forEach(handlerInfo -> {
-				AnnotationInfo at = handlerInfo.annotation.get("at");
-				Identifier point = Identifier.of(at.get("value"));
-				if (Mixtures.INJECTION_POINTS.containsKey(point))
-					//noinspection unchecked
-					injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(handlerInfo.annotation.node.desc), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
-				else
-					throw new IllegalStateException("Unknown injection point \"" + point + "\" in mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
-			});
-			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
-		}));
+		// adding interfaces
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.interfaces.stream()).distinct().forEach(node.interfaces::add);
+
+		// adding methods and fixing instruction owners
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).forEach(mixtureHandlerInfo -> {
 			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
@@ -66,7 +54,27 @@ public final class MixtureTransformer implements ProxyTransformer {
 			});
 			node.methods.add(mixtureNode);
 		});
+
+		// adding fields
 		info.forEach(mixtureInfo -> node.fields.addAll(mixtureInfo.classNode.fields));
+
+		// handling injections
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
+			String rawPredicate = handlerInfo.annotation.get("predicate", "");
+			return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
+		}).collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
+			Map<Injector, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
+			handlerInfos.forEach(handlerInfo -> {
+				AnnotationInfo at = handlerInfo.annotation.get("at");
+				Identifier point = Identifier.of(at.get("value"));
+				if (Mixtures.INJECTION_POINTS.containsKey(point))
+					//noinspection unchecked
+					injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(handlerInfo.annotation.node.desc), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
+				else
+					throw new IllegalStateException("Unknown injection point \"" + point + "\" in mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
+			});
+			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
+		}));
 	}
 
 }
