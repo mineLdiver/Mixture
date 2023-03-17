@@ -42,6 +42,7 @@ public final class MixtureInfo {
 			if (anns.size() > 1)
 				throw new IllegalStateException("Multiple injector annotations on Mixture method \"L" + classNode.name + ";" + methodNode.name + methodNode.desc + "\"!");
 			annotation = AnnotationInfo.of(anns.iterator().next());
+			methodNode.invisibleAnnotations.remove(annotation.node);
 		}
 		
 		public MixtureInfo getMixtureInfo() {

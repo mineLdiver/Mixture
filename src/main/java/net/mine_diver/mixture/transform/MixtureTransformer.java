@@ -34,28 +34,26 @@ public final class MixtureTransformer implements ProxyTransformer {
 		// adding interfaces
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.interfaces.stream()).distinct().forEach(node.interfaces::add);
 
-		// fixing instruction owners
-		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).forEach(mixtureHandlerInfo -> {
-			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;
-			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
-			mixtureNode.instructions.forEach(abstractInsnNode -> {
+		// adding methods and fixing instruction owners
+		info.stream().map(mixtureInfo -> mixtureInfo.classNode).forEach(mixtureNode -> mixtureNode.methods.stream().filter(methodNode -> !methodNode.name.startsWith("<")).forEach(methodNode -> {
+			MethodNode fixedNode = new MethodNode(methodNode.access, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(new String[0]));
+			methodNode.accept(fixedNode);
+			fixedNode.instructions.forEach(abstractInsnNode -> {
 				switch (abstractInsnNode.getType()) {
 					case METHOD_INSN:
 						MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
-						if (methodInsn.owner.equals(mixtureHandlerInfo.getMixtureInfo().classNode.name))
+						if (methodInsn.owner.equals(mixtureNode.name))
 							methodInsn.owner = node.name;
 						break;
 					case FIELD_INSN:
 						FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
-						if (fieldInsn.owner.equals(mixtureHandlerInfo.getMixtureInfo().classNode.name))
+						if (fieldInsn.owner.equals(mixtureNode.name))
 							fieldInsn.owner = node.name;
 						break;
 				}
 			});
-		});
-
-		// adding methods
-		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.methods.stream()).filter(methodNode -> !methodNode.name.startsWith("<")).forEach(node.methods::add);
+			node.methods.add(fixedNode);
+		}));
 
 		// adding fields
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.fields.stream()).forEach(node.fields::add);
