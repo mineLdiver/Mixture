@@ -34,7 +34,7 @@ public final class MixtureTransformer implements ProxyTransformer {
 		// adding interfaces
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.interfaces.stream()).distinct().forEach(node.interfaces::add);
 
-		// adding methods and fixing instruction owners
+		// fixing instruction owners
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).forEach(mixtureHandlerInfo -> {
 			MethodNode mixtureNode = mixtureHandlerInfo.methodNode;
 			mixtureNode.invisibleAnnotations.remove(mixtureHandlerInfo.annotation.node);
@@ -52,11 +52,13 @@ public final class MixtureTransformer implements ProxyTransformer {
 						break;
 				}
 			});
-			node.methods.add(mixtureNode);
 		});
 
+		// adding methods
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.methods.stream()).filter(methodNode -> !methodNode.name.startsWith("<")).forEach(node.methods::add);
+
 		// adding fields
-		info.forEach(mixtureInfo -> node.fields.addAll(mixtureInfo.classNode.fields));
+		info.stream().flatMap(mixtureInfo -> mixtureInfo.classNode.fields.stream()).forEach(node.fields::add);
 
 		// handling injections
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
@@ -76,5 +78,4 @@ public final class MixtureTransformer implements ProxyTransformer {
 			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
 		}));
 	}
-
 }
