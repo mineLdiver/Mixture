@@ -88,6 +88,7 @@ public final class Mixtures implements NamespaceProvider {
         }).info.add(info);
 
         // transformer is invalidated. reinitializing
+        SarcASM.invalidateProxyClass(target);
         SarcASM.initProxyFor(target);
     }
 
