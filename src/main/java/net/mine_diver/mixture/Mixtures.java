@@ -1,6 +1,7 @@
 package net.mine_diver.mixture;
 
 import net.mine_diver.mixture.handler.Inject;
+import net.mine_diver.mixture.handler.ModifyVariable;
 import net.mine_diver.mixture.handler.Redirect;
 import net.mine_diver.mixture.inject.*;
 import net.mine_diver.mixture.transform.MixtureInfo;
@@ -66,6 +67,7 @@ public final class Mixtures implements NamespaceProvider {
         registerInjectionPoint(NAMESPACE.id("injection_points/return"), new ReturnInjectionPoint());
         registerInjector(Inject.class, new InjectInjector());
         registerInjector(Redirect.class, new RedirectInjector());
+        registerInjector(ModifyVariable.class, new ModifyVariableInjector());
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);

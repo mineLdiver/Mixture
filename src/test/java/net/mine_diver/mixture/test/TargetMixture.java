@@ -112,4 +112,18 @@ public class TargetMixture {
     private void onNonVoidReturn(CallbackInfoReturnable<String> cir) {
         cir.setReturnValue(cir.getReturnValue() + " loooool");
     }
+
+    @ModifyVariable(
+            method = @Reference("testReturnable()Ljava/lang/String;"),
+            at = @At(
+                    value = "mixture:injection_points/invoke",
+                    target = @Reference("Ljava/util/Random;nextInt()I"),
+                    ordinal = 1,
+                    shift = At.Shift.AFTER
+            ),
+            index = 2
+    )
+    private int modifyVarAfterXor(int a) {
+        return 0xCAFEBABE;
+    }
 }
