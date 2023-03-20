@@ -54,17 +54,17 @@ public class TargetMixture {
         System.out.println("what!??!?!");
     }
 
-    @Inject(
-            method = @Reference("testReturnable()Ljava/lang/String;"),
-            at = @At(
-                    value = "mixture:injection_points/invoke",
-                    target = @Reference("Ljava/util/Random;nextInt()I"),
-                    ordinal = 0
-            )
-    )
-    private void cirTest(CallbackInfoReturnable<String> cir) {
-        cir.setReturnValue("Success!");
-    }
+//    @Inject(
+//            method = @Reference("testReturnable()Ljava/lang/String;"),
+//            at = @At(
+//                    value = "mixture:injection_points/invoke",
+//                    target = @Reference("Ljava/util/Random;nextInt()I"),
+//                    ordinal = 0
+//            )
+//    )
+//    private void cirTest(CallbackInfoReturnable<String> cir) {
+//        cir.setReturnValue("Success!");
+//    }
 
     @Redirect(
             method = @Reference("test(Z)V"),
@@ -95,5 +95,21 @@ public class TargetMixture {
     )
     private void onStart(boolean condition, CallbackInfo ci) {
         System.out.println("Ayy, start of a method!");
+    }
+
+    @Inject(
+            method = @Reference("test(Z)V"),
+            at = @At("mixture:injection_points/return")
+    )
+    private void onReturn(boolean condition, CallbackInfo ci) {
+        System.out.println("Booo, the end of the method...");
+    }
+
+    @Inject(
+            method = @Reference("testReturnable()Ljava/lang/String;"),
+            at = @At("mixture:injection_points/return")
+    )
+    private void onNonVoidReturn(CallbackInfoReturnable<String> cir) {
+        cir.setReturnValue(cir.getReturnValue() + " loooool");
     }
 }

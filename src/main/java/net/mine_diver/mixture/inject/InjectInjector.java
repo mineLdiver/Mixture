@@ -35,15 +35,23 @@ public final class InjectInjector implements Injector {
         }
         Type returnType = Type.getReturnType(mixedMethod.desc);
         boolean returnVoid = Type.VOID_TYPE == returnType;
+        int opcode = injectionPoint.getOpcode();
+        boolean isAtReturn = opcode >= IRETURN && opcode < RETURN;
         Type callbackInfoType = returnVoid ? CALLBACKINFO_TYPE : CALLBACKINFORETURNABLE_TYPE;
         Type[] handlerArgs = MixtureUtils.concat(argumentTypes, callbackInfoType);
         int callbackOrdinal = handlerArgs.length;
         boolean usesCallbackInfo = StreamSupport.stream(handlerInfo.methodNode.instructions.spliterator(), false).anyMatch(abstractInsnNode1 -> abstractInsnNode1 instanceof VarInsnNode && abstractInsnNode1.getOpcode() == ALOAD && ((VarInsnNode) abstractInsnNode1).var == callbackOrdinal);
+        LocalVariableNode returnVar = null;
         LocalVariableNode callbackInfoVar = null;
         if (usesCallbackInfo) {
             insns.add(new TypeInsnNode(NEW, callbackInfoType.getInternalName()));
             insns.add(new InsnNode(DUP));
-            insns.add(new MethodInsnNode(INVOKESPECIAL, callbackInfoType.getInternalName(), "<init>", "()V"));
+            if (isAtReturn) {
+                returnVar = ASMHelper.addLocalVariable(mixedMethod, returnType.getDescriptor());
+                insns.insert(new VarInsnNode(returnType.getOpcode(ISTORE), returnVar.index));
+                insns.add(new VarInsnNode(returnType.getOpcode(ILOAD), returnVar.index));
+            }
+            insns.add(new MethodInsnNode(INVOKESPECIAL, callbackInfoType.getInternalName(), "<init>", "(" + (isAtReturn ? returnType.getSort() == Type.OBJECT || returnType.getSort() == Type.ARRAY ? Type.getDescriptor(Object.class) : returnType.getDescriptor() : "") + ")V"));
             callbackInfoVar = ASMHelper.addLocalVariable(mixedMethod, varIndex -> "callbackInfo" + varIndex, callbackInfoType.getDescriptor());
             insns.add(new VarInsnNode(ASTORE, callbackInfoVar.index));
             insns.add(new VarInsnNode(ALOAD, callbackInfoVar.index));
@@ -65,6 +73,8 @@ public final class InjectInjector implements Injector {
             }
             insns.add(new InsnNode(returnType.getOpcode(IRETURN)));
             insns.add(elseLabel);
+            if (isAtReturn)
+                insns.add(new VarInsnNode(returnType.getOpcode(ILOAD), returnVar.index));
         }
         if (handlerInfo.annotation.<AnnotationInfo>get("at").getEnum("shift", At.Shift.UNSET) == At.Shift.AFTER)
             mixedMethod.instructions.insert(injectionPoint, insns);

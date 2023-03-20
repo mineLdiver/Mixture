@@ -63,6 +63,7 @@ public final class Mixtures implements NamespaceProvider {
         registerInjectionPoint(NAMESPACE.id("injection_points/head"), new HeadInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/field"), new FieldInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), new InvokeInjectionPoint());
+        registerInjectionPoint(NAMESPACE.id("injection_points/return"), new ReturnInjectionPoint());
         registerInjector(Inject.class, new InjectInjector());
         registerInjector(Redirect.class, new RedirectInjector());
     }
