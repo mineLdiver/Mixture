@@ -1,5 +1,7 @@
 package net.mine_diver.mixture.handler;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.util.Identifier;
 
@@ -17,8 +19,8 @@ public @interface Reference {
     String value();
     String[] overrides() default {};
 
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Parser {
-        private Parser() {}
         public static String get(Reference reference) {
             String value = reference.value();
             String[] overrides = reference.overrides();

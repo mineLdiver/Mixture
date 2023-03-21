@@ -31,6 +31,10 @@ public class Target {
         System.out.println(testField);
     }
 
+    public void altTest(boolean condition) {
+
+    }
+
     public String testReturnable() {
         Random random = new Random();
         int a = random.nextInt();

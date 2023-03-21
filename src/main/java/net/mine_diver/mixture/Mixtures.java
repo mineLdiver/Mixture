@@ -11,12 +11,9 @@ import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.Namespace;
 import net.mine_diver.mixture.util.NamespaceProvider;
 import net.mine_diver.sarcasm.SarcASM;
-import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -57,7 +54,7 @@ public final class Mixtures implements NamespaceProvider {
         LOGGER.addHandler(handler);
     }
 
-    private static final Map<Class<?>, MixtureTransformer> MIXTURES = new IdentityHashMap<>();
+    private static final Map<Class<?>, MixtureTransformer<?>> MIXTURES = new IdentityHashMap<>();
     private static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS_MUTABLE = new IdentityHashMap<>();
     private static final Map<String, Injector<?>> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
@@ -76,12 +73,10 @@ public final class Mixtures implements NamespaceProvider {
     public static final Set<Identifier> PREDICATES = Collections.unmodifiableSet(PREDICATES_MUTABLE);
 
     public static <T> void register(Class<T> mixture) {
-        ClassNode mixtureNode = new ClassNode();
-        new ClassReader(ASMHelper.readClassBytes(mixture)).accept(mixtureNode, ClassReader.EXPAND_FRAMES);
-        MixtureInfo info = new MixtureInfo(mixtureNode);
+        MixtureInfo info = new MixtureInfo(mixture);
         Class<?> target = info.annotation.value();
         MIXTURES.computeIfAbsent(target, aClass -> {
-            MixtureTransformer transformer = new MixtureTransformer();
+            MixtureTransformer<?> transformer = new MixtureTransformer<>(target);
             SarcASM.registerTransformer(aClass, transformer);
             return transformer;
         }).info.add(info);

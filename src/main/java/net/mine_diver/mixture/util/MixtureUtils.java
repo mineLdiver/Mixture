@@ -8,10 +8,12 @@ import org.objectweb.asm.tree.AnnotationNode;
 import sun.reflect.annotation.AnnotationParser;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -41,17 +43,25 @@ public final class MixtureUtils {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+        Map<String, Method> methods = new HashMap<>();
         Map<String, Object> values = new HashMap<>();
-        for (int i = 0; i < node.values.size(); i += 2)
-            values.put((String) node.values.get(i), transformValue(node.values.get(i + 1)));
         for (Method method : annotationType.getDeclaredMethods())
-            values.computeIfAbsent(method.getName(), methodName -> method.getDefaultValue());
+            methods.put(method.getName(), method);
+        for (int i = 0; i < node.values.size(); i += 2) {
+            String key = (String) node.values.get(i);
+            values.put(key, transformValue(methods.get(key).getReturnType(), node.values.get(i + 1)));
+            methods.remove(key);
+        }
+        methods.forEach((s, method) -> values.put(s, method.getDefaultValue()));
         //noinspection unchecked
         return (A) AnnotationParser.annotationForMap(annotationType, values);
     }
 
-    private static Object transformValue(Object value) {
-        if (value instanceof AnnotationNode)
+    private static Object transformValue(Class<?> originalType, Object value) {
+        if (value instanceof List<?>) {
+            Class<?> componentType = originalType.getComponentType();
+            return ((List<?>) value).stream().map(o -> transformValue(componentType, o)).toArray(length -> (Object[]) Array.newInstance(componentType, length));
+        } else if (value instanceof AnnotationNode)
             return createAnnotationInstance((AnnotationNode) value);
         else if (value instanceof Type) try {
             return Class.forName(((Type) value).getClassName());
@@ -64,8 +74,6 @@ public final class MixtureUtils {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        } else if (value.getClass().isArray())
-            return Arrays.stream((Object[]) value).map(MixtureUtils::transformValue).toArray();
-        else return value;
+        } else return value;
     }
 }

@@ -7,7 +7,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface Inject {
 
-    Reference method();
+    Reference[] method() default {};
+    Desc[] target() default {};
     At at();
     LocalCapture locals() default LocalCapture.NO_CAPTURE;
     String predicate() default "";

@@ -26,8 +26,7 @@ public final class Injectors {
                 capture = localCapture.isCaptureLocals();
         if (!print && !capture)
             return;
-        MethodNode analyzeMethod = new MethodNode(methodNode.access, methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(new String[0]));
-        methodNode.accept(analyzeMethod);
+        MethodNode analyzeMethod = ASMHelper.clone(methodNode);
         LocalVariableNode[] locals = Locals.getLocalsAt(classNode, analyzeMethod, injectionPoint, Locals.Settings.DEFAULT);
         List<String> localClasses = print ? new ArrayList<>() : null;
         int firstLocal = Bytecode.getFirstNonArgLocalIndex(methodNode);

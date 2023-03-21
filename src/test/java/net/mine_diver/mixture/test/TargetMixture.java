@@ -90,7 +90,10 @@ public class TargetMixture {
     private void redirectTestField(Target instance, int value) {}
 
     @Inject(
-            method = @Reference("test(Z)V"),
+            method = {
+                    @Reference("altTest(Z)V"),
+                    @Reference("test(Z)V")
+            },
             at = @At("mixture:injection_points/head")
     )
     private void onStart(boolean condition, CallbackInfo ci) {
@@ -98,7 +101,10 @@ public class TargetMixture {
     }
 
     @Inject(
-            method = @Reference("test(Z)V"),
+            method = {
+                    @Reference("altTest(Z)V"),
+                    @Reference("test(Z)V")
+            },
             at = @At("mixture:injection_points/return")
     )
     private void onReturn(boolean condition, CallbackInfo ci) {

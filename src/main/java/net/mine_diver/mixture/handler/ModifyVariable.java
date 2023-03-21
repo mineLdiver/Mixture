@@ -7,7 +7,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface ModifyVariable {
 
-    Reference method();
+    Reference[] method() default {};
+    Desc[] target() default {};
     At at();
     int index();
     boolean argsOnly() default false;

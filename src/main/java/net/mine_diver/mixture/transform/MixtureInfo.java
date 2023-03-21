@@ -5,6 +5,7 @@ import net.mine_diver.mixture.handler.CommonInjector;
 import net.mine_diver.mixture.handler.Mixture;
 import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.MixtureUtils;
+import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -21,9 +22,9 @@ public final class MixtureInfo {
 	public final ClassNode classNode;
 	public final Mixture annotation;
 	public final Set<HandlerInfo<?>> handlers;
-	
-	public MixtureInfo(ClassNode classNode) {
-		this.classNode = classNode;
+
+	public MixtureInfo(Class<?> mixtureClass) {
+		classNode = ASMHelper.readClassNode(mixtureClass);
 		annotation = MixtureUtils.createAnnotationInstance(classNode.invisibleAnnotations.stream().filter(annotationNode -> Type.getDescriptor(Mixture.class).equals(annotationNode.desc)).findFirst().orElseThrow(NullPointerException::new));
 		handlers = Collections.unmodifiableSet((Set<? extends HandlerInfo<?>>) classNode.methods.stream().filter(method -> method.invisibleAnnotations != null && method.invisibleAnnotations.stream().anyMatch(ann -> {
 			if (Mixtures.INJECTORS.containsKey(ann.desc)) {
@@ -33,7 +34,7 @@ public final class MixtureInfo {
 			return false;
 		})).map(HandlerInfo::new).collect(Collectors.toCollection(Util::newIdentitySet)));
 	}
-	
+
 	public final class HandlerInfo<A extends Annotation & CommonInjector> {
 		
 		public final MethodNode methodNode;

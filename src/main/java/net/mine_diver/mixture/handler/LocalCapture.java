@@ -1,29 +1,24 @@
 package net.mine_diver.mixture.handler;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+@Getter
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public enum LocalCapture {
 
     NO_CAPTURE(false, false),
     PRINT(false, true),
     CAPTURE_FAILHARD;
 
-    private final boolean captureLocals;
-
-    private final boolean printLocals;
+    boolean
+            captureLocals,
+            printLocals;
 
     LocalCapture() {
         this(true, false);
-    }
-
-    LocalCapture(boolean captureLocals, boolean printLocals) {
-        this.captureLocals = captureLocals;
-        this.printLocals = printLocals;
-    }
-
-    public boolean isCaptureLocals() {
-        return this.captureLocals;
-    }
-
-    public boolean isPrintLocals() {
-        return this.printLocals;
     }
 }
