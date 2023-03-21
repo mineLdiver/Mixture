@@ -1,6 +1,7 @@
 package net.mine_diver.mixture.inject;
 
-import net.mine_diver.mixture.transform.AnnotationInfo;
+import net.mine_diver.mixture.handler.At;
+import net.mine_diver.mixture.handler.Reference;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -14,10 +15,10 @@ import java.util.Set;
 public class FieldInjectionPoint implements InjectionPoint<FieldInsnNode> {
 
     @Override
-    public Set<FieldInsnNode> find(InsnList insns, AnnotationInfo at) {
-        String target = at.getReference("target");
-        int ordinal = at.get("ordinal", -1);
-        int opcode = at.get("opcode", -1);
+    public Set<FieldInsnNode> find(InsnList insns, At at) {
+        String target = Reference.Parser.get(at.target());
+        int ordinal = at.ordinal();
+        int opcode = at.opcode();
         Set<FieldInsnNode> found = Util.newIdentitySet();
         Iterator<AbstractInsnNode> iter = insns.iterator();
         int cur = 0;

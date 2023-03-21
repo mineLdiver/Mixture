@@ -1,7 +1,8 @@
 package net.mine_diver.mixture.inject;
 
 import net.mine_diver.mixture.handler.At;
-import net.mine_diver.mixture.transform.AnnotationInfo;
+import net.mine_diver.mixture.handler.CommonInjector;
+import net.mine_diver.mixture.handler.ModifyVariable;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.sarcasm.util.Locals;
 import org.objectweb.asm.Opcodes;
@@ -12,16 +13,17 @@ import java.lang.reflect.Modifier;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModifyVariableInjector implements Injector {
+@SuppressWarnings("ClassExplicitlyAnnotation")
+public class ModifyVariableInjector<T extends ModifyVariable & CommonInjector> implements Injector<T> {
 
     @Override
-    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo handlerInfo, AbstractInsnNode injectionPoint) {
+    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo<T> handlerInfo, AbstractInsnNode injectionPoint) {
         InsnList insns = new InsnList();
         boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
         if (!isStatic)
             insns.add(new VarInsnNode(ALOAD, 0));
-        int varIndex = handlerInfo.annotation.<Integer>get("index");
-        boolean argsOnly = handlerInfo.annotation.<Boolean>get("argsOnly", false);
+        int varIndex = handlerInfo.annotation.index();
+        boolean argsOnly = handlerInfo.annotation.argsOnly();
         Type varType = argsOnly ? Type.getArgumentTypes(mixedMethod.desc)[varIndex - 1] : Type.getType(Locals.getLocalVariableAt(mixedClass, mixedMethod, injectionPoint, varIndex).desc);
         int curSize = varType.getSize();
         insns.add(new VarInsnNode(varType.getOpcode(Opcodes.ILOAD), varIndex));
@@ -39,7 +41,7 @@ public class ModifyVariableInjector implements Injector {
         Injectors.locals(handlerInfo, insns, mixedClass, mixedMethod, injectionPoint, curSize);
         insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
         insns.add(new VarInsnNode(varType.getOpcode(ISTORE), varIndex));
-        if (handlerInfo.annotation.<AnnotationInfo>get("at").getEnum("shift", At.Shift.UNSET) == At.Shift.AFTER)
+        if (handlerInfo.annotation.at().shift() == At.Shift.AFTER)
             mixedMethod.instructions.insert(injectionPoint, insns);
         else
             mixedMethod.instructions.insertBefore(injectionPoint, insns);

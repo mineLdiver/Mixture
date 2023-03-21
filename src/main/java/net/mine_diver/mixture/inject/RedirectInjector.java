@@ -1,5 +1,7 @@
 package net.mine_diver.mixture.inject;
 
+import net.mine_diver.mixture.handler.CommonInjector;
+import net.mine_diver.mixture.handler.Redirect;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.util.MixtureASMHelper;
 import net.mine_diver.sarcasm.util.ASMHelper;
@@ -14,10 +16,11 @@ import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.tree.AbstractInsnNode.FIELD_INSN;
 import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 
-public final class RedirectInjector implements Injector {
+@SuppressWarnings("ClassExplicitlyAnnotation")
+public final class RedirectInjector<T extends Redirect & CommonInjector> implements Injector<T> {
 
     @Override
-    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo handlerInfo, AbstractInsnNode injectionPoint) {
+    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo<T> handlerInfo, AbstractInsnNode injectionPoint) {
         boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
         int opcode = injectionPoint.getOpcode();
         boolean isStaticInsn = opcode == GETSTATIC || opcode == PUTSTATIC || opcode == INVOKESTATIC;

@@ -1,13 +1,18 @@
 package net.mine_diver.mixture.transform;
 
 import net.mine_diver.mixture.Mixtures;
+import net.mine_diver.mixture.handler.At;
+import net.mine_diver.mixture.handler.CommonInjector;
+import net.mine_diver.mixture.handler.Reference;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.mixture.util.MixtureUtils;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -24,9 +29,9 @@ public final class MixtureTransformer implements ProxyTransformer {
 	@Override
 	public String[] getRequestedMethods() {
 		return info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
-			String rawPredicate = handlerInfo.annotation.get("predicate", "");
+			String rawPredicate = handlerInfo.annotation.predicate();
 			return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
-		}).map(handlerInfo -> handlerInfo.annotation.getReference("method")).toArray(String[]::new);
+		}).map(handlerInfo -> Reference.Parser.get(handlerInfo.annotation.method())).toArray(String[]::new);
 	}
 
 	@Override
@@ -60,20 +65,28 @@ public final class MixtureTransformer implements ProxyTransformer {
 
 		// handling injections
 		info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
-			String rawPredicate = handlerInfo.annotation.get("predicate", "");
+			String rawPredicate = handlerInfo.annotation.predicate();
 			return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
-		}).collect(Collectors.groupingBy(handlerInfo -> handlerInfo.annotation.getReference("method"), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
-			Map<Injector, Map<MixtureInfo.HandlerInfo, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
+		}).collect(Collectors.groupingBy(handlerInfo -> Reference.Parser.get(handlerInfo.annotation.method()), Collectors.toCollection(net.mine_diver.sarcasm.util.Util::newIdentitySet))).forEach((s, handlerInfos) -> node.methods.stream().filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode))).forEach(methodNode -> {
+			Map<Injector<?>, Map<MixtureInfo.HandlerInfo<?>, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
 			handlerInfos.forEach(handlerInfo -> {
-				AnnotationInfo at = handlerInfo.annotation.get("at");
-				Identifier point = Identifier.of(at.get("value"));
+				At at = handlerInfo.annotation.at();
+				Identifier point = Identifier.of(at.value());
 				if (Mixtures.INJECTION_POINTS.containsKey(point))
 					//noinspection unchecked
-					injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(handlerInfo.annotation.node.desc), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
+					injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(Type.getDescriptor(handlerInfo.annotation.annotationType())), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
 				else
 					throw new IllegalStateException("Unknown injection point \"" + point + "\" in mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
 			});
-			injectorToHandlers.forEach((injector, handlers) -> handlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> injector.inject(node, methodNode, handlerInfo, injectionPoint))));
+			injectorToHandlers.forEach((injector, handlers) -> applyHandlers(node, methodNode, injector, handlers));
 		}));
+	}
+
+	private static <T extends Annotation & CommonInjector> void applyHandlers(ClassNode node, MethodNode methodNode, Injector<?> injector, Map<? extends MixtureInfo.HandlerInfo<?>, Set<AbstractInsnNode>> handlers) {
+		//noinspection unchecked
+		Injector<T> tInjector = (Injector<T>) injector;
+		//noinspection unchecked
+		Map<? extends MixtureInfo.HandlerInfo<T>, Set<AbstractInsnNode>> tHandlers = (Map<? extends MixtureInfo.HandlerInfo<T>, Set<AbstractInsnNode>>) handlers;
+		tHandlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> tInjector.inject(node, methodNode, handlerInfo, injectionPoint)));
 	}
 }

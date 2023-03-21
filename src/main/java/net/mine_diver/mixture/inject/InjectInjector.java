@@ -1,9 +1,6 @@
 package net.mine_diver.mixture.inject;
 
-import net.mine_diver.mixture.handler.At;
-import net.mine_diver.mixture.handler.CallbackInfo;
-import net.mine_diver.mixture.handler.CallbackInfoReturnable;
-import net.mine_diver.mixture.transform.AnnotationInfo;
+import net.mine_diver.mixture.handler.*;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.util.MixtureUtils;
 import net.mine_diver.sarcasm.util.ASMHelper;
@@ -15,13 +12,14 @@ import java.util.stream.StreamSupport;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public final class InjectInjector implements Injector {
+@SuppressWarnings("ClassExplicitlyAnnotation")
+public final class InjectInjector<T extends Inject & CommonInjector> implements Injector<T> {
 
     private static final Type CALLBACKINFO_TYPE = Type.getType(CallbackInfo.class);
     private static final Type CALLBACKINFORETURNABLE_TYPE = Type.getType(CallbackInfoReturnable.class);
 
     @Override
-    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo handlerInfo, AbstractInsnNode injectionPoint) {
+    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo<T> handlerInfo, AbstractInsnNode injectionPoint) {
         InsnList insns = new InsnList();
         boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
         if (!isStatic)
@@ -76,7 +74,7 @@ public final class InjectInjector implements Injector {
             if (isAtReturn)
                 insns.add(new VarInsnNode(returnType.getOpcode(ILOAD), returnVar.index));
         }
-        if (handlerInfo.annotation.<AnnotationInfo>get("at").getEnum("shift", At.Shift.UNSET) == At.Shift.AFTER)
+        if (handlerInfo.annotation.at().shift() == At.Shift.AFTER)
             mixedMethod.instructions.insert(injectionPoint, insns);
         else
             mixedMethod.instructions.insertBefore(injectionPoint, insns);

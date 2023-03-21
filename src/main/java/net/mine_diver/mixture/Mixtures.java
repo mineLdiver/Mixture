@@ -1,5 +1,6 @@
 package net.mine_diver.mixture;
 
+import net.mine_diver.mixture.handler.CommonInjector;
 import net.mine_diver.mixture.handler.Inject;
 import net.mine_diver.mixture.handler.ModifyVariable;
 import net.mine_diver.mixture.handler.Redirect;
@@ -58,32 +59,27 @@ public final class Mixtures implements NamespaceProvider {
 
     private static final Map<Class<?>, MixtureTransformer> MIXTURES = new IdentityHashMap<>();
     private static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS_MUTABLE = new IdentityHashMap<>();
-    private static final Map<String, Injector> INJECTORS_MUTABLE = new HashMap<>();
+    private static final Map<String, Injector<?>> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
     static {
         registerInjectionPoint(NAMESPACE.id("injection_points/head"), new HeadInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/field"), new FieldInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/invoke"), new InvokeInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/return"), new ReturnInjectionPoint());
-        registerInjector(Inject.class, new InjectInjector());
-        registerInjector(Redirect.class, new RedirectInjector());
-        registerInjector(ModifyVariable.class, new ModifyVariableInjector());
+        registerInjector(Inject.class, new InjectInjector<>());
+        registerInjector(Redirect.class, new RedirectInjector<>());
+        registerInjector(ModifyVariable.class, new ModifyVariableInjector<>());
     }
 
     public static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS = Collections.unmodifiableMap(INJECTION_POINTS_MUTABLE);
-    public static final Map<String, Injector> INJECTORS = Collections.unmodifiableMap(INJECTORS_MUTABLE);
+    public static final Map<String, Injector<?>> INJECTORS = Collections.unmodifiableMap(INJECTORS_MUTABLE);
     public static final Set<Identifier> PREDICATES = Collections.unmodifiableSet(PREDICATES_MUTABLE);
 
     public static <T> void register(Class<T> mixture) {
         ClassNode mixtureNode = new ClassNode();
         new ClassReader(ASMHelper.readClassBytes(mixture)).accept(mixtureNode, ClassReader.EXPAND_FRAMES);
         MixtureInfo info = new MixtureInfo(mixtureNode);
-        Class<?> target;
-        try {
-            target = Class.forName(((Type) info.annotation.get("value")).getClassName());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        Class<?> target = info.annotation.value();
         MIXTURES.computeIfAbsent(target, aClass -> {
             MixtureTransformer transformer = new MixtureTransformer();
             SarcASM.registerTransformer(aClass, transformer);
@@ -100,7 +96,7 @@ public final class Mixtures implements NamespaceProvider {
             LOGGER.warning("Overriding injection point \"" + identifier + "\"! This might be intentional, or may be a result of an unaccounted collision");
     }
 
-    public static void registerInjector(Class<? extends Annotation> annotation, Injector injector) {
+    public static <A extends Annotation, T extends Annotation & CommonInjector> void registerInjector(Class<A> annotation, Injector<T> injector) {
         String annDescriptor = Type.getDescriptor(annotation);
         if (INJECTORS_MUTABLE.put(annDescriptor, injector) != null)
             LOGGER.warning("Overriding injector for annotation \"" + annotation.getName() + "\". This is most likely intentional");

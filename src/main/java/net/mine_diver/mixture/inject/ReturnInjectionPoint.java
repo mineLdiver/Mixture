@@ -1,6 +1,6 @@
 package net.mine_diver.mixture.inject;
 
-import net.mine_diver.mixture.transform.AnnotationInfo;
+import net.mine_diver.mixture.handler.At;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
@@ -16,8 +16,8 @@ import static org.objectweb.asm.Opcodes.RETURN;
 public class ReturnInjectionPoint implements InjectionPoint<InsnNode> {
 
     @Override
-    public Set<InsnNode> find(InsnList insns, AnnotationInfo at) {
-        int ordinal = at.get("ordinal", -1);
+    public Set<InsnNode> find(InsnList insns, At at) {
+        int ordinal = at.ordinal();
         Set<InsnNode> found = Util.newIdentitySet();
         Iterator<AbstractInsnNode> iter = insns.iterator();
         int cur = 0;

@@ -19,8 +19,8 @@ import static org.objectweb.asm.Opcodes.ILOAD;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Injectors {
 
-    public static void locals(MixtureInfo.HandlerInfo info, InsnList out, ClassNode classNode, MethodNode methodNode, AbstractInsnNode injectionPoint, int lastArg) {
-        LocalCapture localCapture = info.annotation.getEnum("locals", LocalCapture.NO_CAPTURE);
+    public static void locals(MixtureInfo.HandlerInfo<?> info, InsnList out, ClassNode classNode, MethodNode methodNode, AbstractInsnNode injectionPoint, int lastArg) {
+        LocalCapture localCapture = info.annotation.locals();
         final boolean
                 print = localCapture.isPrintLocals(),
                 capture = localCapture.isCaptureLocals();
