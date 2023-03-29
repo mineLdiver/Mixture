@@ -1,13 +1,11 @@
 package net.mine_diver.mixture;
 
-import net.mine_diver.mixture.handler.CommonInjector;
-import net.mine_diver.mixture.handler.Inject;
-import net.mine_diver.mixture.handler.ModifyVariable;
-import net.mine_diver.mixture.handler.Redirect;
+import net.mine_diver.mixture.handler.*;
 import net.mine_diver.mixture.inject.*;
 import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.transform.MixtureTransformer;
 import net.mine_diver.mixture.util.Identifier;
+import net.mine_diver.mixture.util.MixtureUtil;
 import net.mine_diver.mixture.util.Namespace;
 import net.mine_diver.mixture.util.NamespaceProvider;
 import net.mine_diver.sarcasm.SarcASM;
@@ -47,7 +45,7 @@ public final class Mixtures implements NamespaceProvider {
                         className.substring(className.lastIndexOf(".") + 1),
                         lr.getSourceMethodName(),
                         lr.getLevel().getLocalizedName(),
-                        lr.getMessage()
+                        formatMessage(lr)
                 );
             }
         });
@@ -79,7 +77,7 @@ public final class Mixtures implements NamespaceProvider {
             MixtureTransformer<?> transformer = new MixtureTransformer<>(target);
             SarcASM.registerTransformer(aClass, transformer);
             return transformer;
-        }).info.add(info);
+        }).add(info);
 
         // transformer is invalidated. reinitializing
         SarcASM.invalidateProxyClass(target);
@@ -97,8 +95,17 @@ public final class Mixtures implements NamespaceProvider {
             LOGGER.warning("Overriding injector for annotation \"" + annotation.getName() + "\". This is most likely intentional");
     }
 
-    public static void registerPredicate(Identifier predicate) {
+    public static void registerPredicate(final Identifier predicate) {
         if (!PREDICATES_MUTABLE.add(predicate))
             LOGGER.warning("Registered predicate \"" + predicate + "\" multiple times! This might be intentional, or may be a result of an unaccounted collision");
+    }
+
+    public static boolean containsPredicate(final Identifier predicate) {
+        return Mixtures.PREDICATES.contains(predicate);
+    }
+
+    public static boolean containsPredicate(final RawPredicateProvider rawPredicateProvider) {
+        final String rawPredicate = rawPredicateProvider.predicate();
+        return MixtureUtil.isNullOrEmpty(rawPredicate) || containsPredicate(Identifier.of(rawPredicate));
     }
 }

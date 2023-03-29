@@ -11,6 +11,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Modifier;
+import java.util.Set;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.tree.AbstractInsnNode.FIELD_INSN;
@@ -20,8 +21,11 @@ import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 public final class RedirectInjector<T extends Redirect & CommonInjector> implements Injector<T> {
 
     @Override
-    public void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo<T> handlerInfo, AbstractInsnNode injectionPoint) {
-        boolean isStatic = Modifier.isStatic(handlerInfo.methodNode.access);
+    public void inject(ClassNode mixedClass, MethodNode mixedMethod, AbstractInsnNode injectionPoint, Set<MixtureInfo.HandlerInfo<T>> handlers) {
+        if (handlers.size() > 1)
+            throw new IllegalStateException("More than one redirects on the same injection point!");
+        MixtureInfo.HandlerInfo<T> handler = handlers.iterator().next();
+        boolean isStatic = Modifier.isStatic(handler.methodNode.access);
         int opcode = injectionPoint.getOpcode();
         boolean isStaticInsn = opcode == GETSTATIC || opcode == PUTSTATIC || opcode == INVOKESTATIC;
         InsnList insns = new InsnList();
@@ -59,7 +63,7 @@ public final class RedirectInjector<T extends Redirect & CommonInjector> impleme
             redirectedArg += argumentType.getSize();
             curSize += argumentType.getSize();
         }
-        Type[] actualHandlerArgs = Type.getArgumentTypes(handlerInfo.methodNode.desc);
+        Type[] actualHandlerArgs = Type.getArgumentTypes(handler.methodNode.desc);
         boolean hasMethodArgs = actualHandlerArgs.length > argumentTypes.length;
         Type[] methodArgs = Type.getArgumentTypes(mixedMethod.desc);
         if (hasMethodArgs) {
@@ -70,8 +74,8 @@ public final class RedirectInjector<T extends Redirect & CommonInjector> impleme
                 curSize += argType.getSize();
             }
         }
-        Injectors.locals(handlerInfo, insns, mixedClass, mixedMethod, injectionPoint, curSize);
-        insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handlerInfo.methodNode.name, handlerInfo.methodNode.desc));
+        Injectors.locals(handler, insns, mixedClass, mixedMethod, injectionPoint, curSize);
+        insns.add(new MethodInsnNode(isStatic ? INVOKESTATIC : INVOKESPECIAL, mixedClass.name, handler.methodNode.name, handler.methodNode.desc));
         mixedMethod.instructions.insertBefore(injectionPoint, insns);
         mixedMethod.instructions.remove(injectionPoint);
     }

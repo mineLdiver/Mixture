@@ -4,7 +4,7 @@ import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.handler.CommonInjector;
 import net.mine_diver.mixture.handler.Mixture;
 import net.mine_diver.mixture.util.Identifier;
-import net.mine_diver.mixture.util.MixtureUtils;
+import net.mine_diver.mixture.util.MixtureUtil;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
 import org.objectweb.asm.Type;
@@ -25,11 +25,11 @@ public final class MixtureInfo {
 
 	public MixtureInfo(Class<?> mixtureClass) {
 		classNode = ASMHelper.readClassNode(mixtureClass);
-		annotation = MixtureUtils.createAnnotationInstance(classNode.invisibleAnnotations.stream().filter(annotationNode -> Type.getDescriptor(Mixture.class).equals(annotationNode.desc)).findFirst().orElseThrow(NullPointerException::new));
+		annotation = MixtureUtil.createAnnotationInstance(classNode.invisibleAnnotations.stream().filter(annotationNode -> Type.getDescriptor(Mixture.class).equals(annotationNode.desc)).findFirst().orElseThrow(NullPointerException::new));
 		handlers = Collections.unmodifiableSet((Set<? extends HandlerInfo<?>>) classNode.methods.stream().filter(method -> method.invisibleAnnotations != null && method.invisibleAnnotations.stream().anyMatch(ann -> {
 			if (Mixtures.INJECTORS.containsKey(ann.desc)) {
-				String rawPredicate = MixtureUtils.createInjectorAnnotationInstance(ann).predicate();
-				return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
+				String rawPredicate = CommonInjector.of(MixtureUtil.createAnnotationInstance(ann)).predicate();
+				return MixtureUtil.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
 			}
 			return false;
 		})).map(HandlerInfo::new).collect(Collectors.toCollection(Util::newIdentitySet)));
@@ -46,7 +46,7 @@ public final class MixtureInfo {
 			if (anns.size() > 1)
 				throw new IllegalStateException("Multiple injector annotations on Mixture method \"L" + classNode.name + ";" + methodNode.name + methodNode.desc + "\"!");
 			AnnotationNode node = anns.iterator().next();
-			annotation = MixtureUtils.createInjectorAnnotationInstance(node);
+			annotation = CommonInjector.of(MixtureUtil.createAnnotationInstance(node));
 			methodNode.invisibleAnnotations.remove(node);
 		}
 		

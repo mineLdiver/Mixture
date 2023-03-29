@@ -4,6 +4,7 @@ import net.mine_diver.mixture.handler.*;
 import org.objectweb.asm.Opcodes;
 
 import java.io.PrintStream;
+import java.util.Random;
 
 @Mixture(Target.class)
 public class TargetMixture {
@@ -91,9 +92,12 @@ public class TargetMixture {
 
     @Inject(
             method = {
-                    @Reference("altTest(Z)V"),
                     @Reference("test(Z)V")
             },
+            target = @Desc(
+                    value = @Reference("altTest"),
+                    args = boolean.class
+            ),
             at = @At("mixture:injection_points/head")
     )
     private void onStart(boolean condition, CallbackInfo ci) {
@@ -120,10 +124,17 @@ public class TargetMixture {
     }
 
     @ModifyVariable(
-            method = @Reference("testReturnable()Ljava/lang/String;"),
+            target = @Desc(
+                    value = @Reference("testReturnable"),
+                    ret = String.class
+            ),
             at = @At(
                     value = "mixture:injection_points/invoke",
-                    target = @Reference("Ljava/util/Random;nextInt()I"),
+                    desc = @Desc(
+                            owner = Random.class,
+                            value = @Reference("nextInt"),
+                            ret = int.class
+                    ),
                     ordinal = 1,
                     shift = At.Shift.AFTER
             ),

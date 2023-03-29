@@ -7,8 +7,9 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.lang.annotation.Annotation;
+import java.util.Set;
 
 public interface Injector<T extends Annotation & CommonInjector> {
 
-	void inject(ClassNode mixedClass, MethodNode mixedMethod, MixtureInfo.HandlerInfo<T> handlerInfo, AbstractInsnNode injectionPoint);
+	void inject(ClassNode mixedClass, MethodNode mixedMethod, AbstractInsnNode injectionPoint, Set<MixtureInfo.HandlerInfo<T>> handlers);
 }

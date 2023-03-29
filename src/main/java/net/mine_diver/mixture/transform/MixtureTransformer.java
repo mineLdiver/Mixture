@@ -1,15 +1,12 @@
 package net.mine_diver.mixture.transform;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
+import lombok.Value;
 import net.mine_diver.mixture.Mixtures;
-import net.mine_diver.mixture.handler.At;
 import net.mine_diver.mixture.handler.CommonInjector;
-import net.mine_diver.mixture.handler.Reference;
+import net.mine_diver.mixture.handler.Matcher;
+import net.mine_diver.mixture.inject.InjectionPoint;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
-import net.mine_diver.mixture.util.MixtureUtils;
 import net.mine_diver.sarcasm.transformer.ProxyTransformer;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import net.mine_diver.sarcasm.util.Util;
@@ -18,7 +15,9 @@ import org.objectweb.asm.tree.*;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.objectweb.asm.tree.AbstractInsnNode.FIELD_INSN;
 import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
@@ -26,94 +25,147 @@ import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 public final class MixtureTransformer<T> implements ProxyTransformer {
 
 	private final ClassNode targetNode;
-	public final Set<MixtureInfo> info = net.mine_diver.sarcasm.util.Util.newIdentitySet();
+	private final Set<MixtureInfo> info = net.mine_diver.sarcasm.util.Util.newIdentitySet();
+	private final Set<String> methods = new HashSet<>();
+	private final Set<DetachedHandlerContext<?, ?>> handlers = Util.newIdentitySet();
+	private final Set<String> interfaces = new HashSet<>();
+	private final Map<String, Set<MethodNode>> mixtureMethods = new HashMap<>();
 
 	public MixtureTransformer(Class<T> targetClass) {
 		targetNode = ASMHelper.readClassNode(targetClass);
 	}
 
+	private static @Value class AttachedHandlerContext<I extends Annotation & CommonInjector> {
+		MixtureInfo.HandlerInfo<I> handler;
+		Injector<I> injector;
+		MethodNode mixedMethod;
+		AbstractInsnNode injectionPoint;
+	}
+
+	private static @Value class DetachedHandlerContext<I extends Annotation & CommonInjector, IP extends AbstractInsnNode> {
+		MixtureInfo.HandlerInfo<I> handler;
+		Injector<I> injector;
+		Predicate<MethodNode> methodMatcher;
+		InjectionPoint<IP> injectionPoint;
+
+		private Stream<AttachedHandlerContext<I>> streamAttached(ClassNode mixedClass) {
+			return mixedClass.methods
+					.stream()
+					.filter(methodMatcher)
+					.flatMap(methodNode ->
+							injectionPoint.find(methodNode.instructions, handler.annotation.at())
+									.stream()
+									.map(ip ->
+											new AttachedHandlerContext<>(
+													handler,
+													injector,
+													methodNode,
+													ip
+											)
+									)
+					);
+		}
+	}
+
+	public <I extends Annotation & CommonInjector, IP extends AbstractInsnNode> void add(MixtureInfo info) {
+		this.info.add(info);
+		//noinspection unchecked
+		Set<DetachedHandlerContext<?, ?>> bHandlers = info.handlers
+				.stream()
+				.map(handlerInfo ->
+						new DetachedHandlerContext<>(
+								(MixtureInfo.HandlerInfo<I>) handlerInfo,
+								(Injector<I>) Mixtures.INJECTORS.get(Type.getDescriptor(handlerInfo.annotation.annotationType())),
+								Matcher.of(handlerInfo.annotation)::matches,
+								(InjectionPoint<IP>) Mixtures.INJECTION_POINTS.get(Identifier.of(handlerInfo.annotation.at().value()))
+						)
+				)
+				.collect(Collectors.toCollection(Util::newIdentitySet));
+		handlers.addAll(bHandlers);
+		targetNode.methods
+				.stream()
+				.filter(
+						bHandlers
+								.stream()
+								.map(DetachedHandlerContext::getMethodMatcher)
+								.reduce(Predicate::or)
+								.orElseGet(() -> methodNode -> false)
+				)
+				.map(ASMHelper::toTarget)
+				.forEach(methods::add);
+		interfaces.addAll(info.classNode.interfaces);
+		mixtureMethods.put(info.classNode.name, Collections.unmodifiableSet(
+				info.classNode.methods
+						.stream()
+						.filter(methodNode -> !methodNode.name.startsWith("<"))
+						.collect(Collectors.<MethodNode, Set<MethodNode>>toCollection(Util::newIdentitySet))
+		));
+	}
+
 	@Override
 	public String[] getRequestedMethods() {
-		return info.stream().flatMap(mixtureInfo -> mixtureInfo.handlers.stream()).filter(handlerInfo -> {
-			String rawPredicate = handlerInfo.annotation.predicate();
-			return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
-		}).flatMap(handlerInfo -> Arrays.stream(handlerInfo.annotation.method()).map(Reference.Parser::get)).distinct().toArray(String[]::new);
+		return methods.toArray(new String[0]);
 	}
 
 	@Override
-	public void transform(ClassNode node) {
+	public void transform(ClassNode mixedClass) {
 		// adding interfaces
-		info.stream()
-				.flatMap(mixtureInfo -> mixtureInfo.classNode.interfaces.stream())
-				.distinct()
-				.forEach(node.interfaces::add);
+		mixedClass.interfaces.addAll(interfaces);
 
 		// adding methods and fixing instruction owners
-		info.stream()
-				.map(mixtureInfo -> mixtureInfo.classNode)
-				.forEach(mixtureNode -> mixtureNode.methods.stream()
-						.filter(methodNode -> !methodNode.name.startsWith("<"))
-						.forEach(methodNode -> {
-							MethodNode fixedNode = ASMHelper.clone(methodNode);
-							fixedNode.instructions.forEach(abstractInsnNode -> {
-								switch (abstractInsnNode.getType()) {
-									case METHOD_INSN:
-										MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
-										if (methodInsn.owner.equals(mixtureNode.name))
-											methodInsn.owner = node.name;
-										break;
-									case FIELD_INSN:
-										FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
-										if (fieldInsn.owner.equals(mixtureNode.name))
-											fieldInsn.owner = node.name;
-										break;
-								}
-							});
-							node.methods.add(fixedNode);
-						})
-				);
+		mixtureMethods
+				.forEach((mixtureName, methodNodes) ->
+						methodNodes
+								.forEach(methodNode -> {
+									MethodNode fixedNode = ASMHelper.clone(methodNode);
+									fixedNode.instructions
+											.forEach(abstractInsnNode -> fixInstructionOwner(mixedClass, mixtureName, abstractInsnNode));
+									mixedClass.methods.add(fixedNode);
+								}));
 
 		// adding fields
-		info.stream()
-				.flatMap(mixtureInfo -> mixtureInfo.classNode.fields.stream())
-				.forEach(node.fields::add);
-
-		@Data
-		@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-		class MethodHandlerEntry<A extends Annotation & CommonInjector> { String method; MixtureInfo.HandlerInfo<A> handler; }
+		info
+				.stream()
+				.flatMap(mixtureInfo ->
+						mixtureInfo.classNode.fields
+								.stream()
+				)
+				.forEach(mixedClass.fields::add);
 
 		// handling injections
-		info.stream()
-				.flatMap(mixtureInfo -> mixtureInfo.handlers.stream())
-				.filter(handlerInfo -> {
-					String rawPredicate = handlerInfo.annotation.predicate();
-					return MixtureUtils.isNullOrEmpty(rawPredicate) || Mixtures.PREDICATES.contains(Identifier.of(rawPredicate));
-				})
-				.flatMap(handlerInfo -> Arrays.stream(handlerInfo.annotation.method()).map(reference -> new MethodHandlerEntry<>(Reference.Parser.get(reference), handlerInfo)))
-				.collect(Collectors.groupingBy(MethodHandlerEntry::getMethod, Collectors.mapping(MethodHandlerEntry::getHandler, Collectors.toCollection(Util::newIdentitySet))))
-				.forEach((s, handlerInfos) -> node.methods.stream()
-						.filter(methodNode -> s.equals(ASMHelper.toTarget(methodNode)))
-						.forEach(methodNode -> {
-							Map<Injector<?>, Map<MixtureInfo.HandlerInfo<?>, Set<AbstractInsnNode>>> injectorToHandlers = new HashMap<>();
-							handlerInfos.forEach(handlerInfo -> {
-								At at = handlerInfo.annotation.at();
-								Identifier point = Identifier.of(at.value());
-								if (Mixtures.INJECTION_POINTS.containsKey(point))
-									//noinspection unchecked
-									injectorToHandlers.computeIfAbsent(Mixtures.INJECTORS.get(Type.getDescriptor(handlerInfo.annotation.annotationType())), s1 -> new IdentityHashMap<>()).put(handlerInfo, (Set<AbstractInsnNode>) Mixtures.INJECTION_POINTS.get(point).find(methodNode.instructions, at));
-								else
-									throw new IllegalStateException("Unknown injection point \"" + point + "\" in mixture handler \"" + ASMHelper.toTarget(handlerInfo.getMixtureInfo().classNode, handlerInfo.methodNode) + "\"!");
-							});
-							injectorToHandlers.forEach((injector, handlers) -> applyHandlers(node, methodNode, injector, handlers));
-						})
-				);
+		handlers
+				.stream()
+				.flatMap(bakedHandler -> bakedHandler.streamAttached(mixedClass))
+				.collect(
+						Collectors.groupingBy(
+								AttachedHandlerContext::getMixedMethod,
+								Collectors.groupingBy(
+										AttachedHandlerContext::getInjector,
+										Collectors.groupingBy(
+												AttachedHandlerContext::getInjectionPoint,
+												Collectors.mapping(
+														AttachedHandlerContext::getHandler,
+														Collectors.toCollection(Util::newIdentitySet)
+												)
+										)
+								)
+						)
+				)
+				.forEach((method, IIPHandlers) -> IIPHandlers.forEach((injector, IPHandlers) -> IPHandlers.forEach((injectionPoint, handlers) -> injector.inject(mixedClass, method, injectionPoint, handlers))));
 	}
 
-	private static <T extends Annotation & CommonInjector> void applyHandlers(ClassNode node, MethodNode methodNode, Injector<?> injector, Map<? extends MixtureInfo.HandlerInfo<?>, Set<AbstractInsnNode>> handlers) {
-		//noinspection unchecked
-		final Injector<T> tInjector = (Injector<T>) injector;
-		//noinspection unchecked
-		final Map<? extends MixtureInfo.HandlerInfo<T>, Set<AbstractInsnNode>> tHandlers = (Map<? extends MixtureInfo.HandlerInfo<T>, Set<AbstractInsnNode>>) handlers;
-		tHandlers.forEach((handlerInfo, injectionPoints) -> injectionPoints.forEach(injectionPoint -> tInjector.inject(node, methodNode, handlerInfo, injectionPoint)));
+	private static void fixInstructionOwner(ClassNode node, String mixtureName, AbstractInsnNode abstractInsnNode) {
+		switch (abstractInsnNode.getType()) {
+			case METHOD_INSN:
+				MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
+				if (methodInsn.owner.equals(mixtureName))
+					methodInsn.owner = node.name;
+				break;
+			case FIELD_INSN:
+				FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
+				if (fieldInsn.owner.equals(mixtureName))
+					fieldInsn.owner = node.name;
+				break;
+		}
 	}
 }

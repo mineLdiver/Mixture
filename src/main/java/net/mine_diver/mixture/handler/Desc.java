@@ -13,5 +13,5 @@ public @interface Desc {
     Class<?> owner() default void.class;
     Reference value();
     Class<?> ret() default void.class;
-    Class<?>[] args() default { };
+    Class<?>[] args() default { void.class };
 }
