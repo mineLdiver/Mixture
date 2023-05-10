@@ -35,7 +35,7 @@ public final class RedirectInjector<T extends Redirect & CommonInjector> impleme
                 switch (opcode) {
                     case PUTSTATIC:
                     case PUTFIELD:
-                        argumentTypes = new Type[] { Type.getType(((FieldInsnNode) injectionPoint).desc) };
+                        argumentTypes = new Type[]{Type.getType(((FieldInsnNode) injectionPoint).desc)};
                         break;
                     default:
                         argumentTypes = new Type[0];
@@ -53,7 +53,7 @@ public final class RedirectInjector<T extends Redirect & CommonInjector> impleme
         int redirectedArg = mixedMethod.maxLocals;
         for (Type argumentType : argumentTypes)
             ASMHelper.addLocalVariable(mixedMethod, argumentType.getDescriptor());
-        for (int i = argumentTypes.length - 1; i >= 0; i --)
+        for (int i = argumentTypes.length - 1; i >= 0; i--)
             insns.add(new VarInsnNode(argumentTypes[i].getOpcode(ISTORE), mixedMethod.maxLocals - Bytecode.getArgsSize(argumentTypes) + i));
         if (!isStatic)
             insns.add(new VarInsnNode(ALOAD, 0));

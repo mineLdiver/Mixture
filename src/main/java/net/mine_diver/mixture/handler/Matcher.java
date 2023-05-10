@@ -46,7 +46,8 @@ public interface Matcher {
         final boolean skipOwner = !desc.startsWith("L");
         final boolean skipRetAndArgs = argsStart < 0;
         final boolean skipType = typeStart < 0;
-        if (!skipRetAndArgs && !skipType) throw new IllegalArgumentException(String.format("Invalid reference! %s", desc));
+        if (!skipRetAndArgs && !skipType)
+            throw new IllegalArgumentException(String.format("Invalid reference! %s", desc));
         final String owner = skipOwner ? null : Type.getType(desc.substring(0, firstSemicolon + 1)).getInternalName();
         final String value = desc.substring(skipOwner ? 0 : firstSemicolon + 1, skipRetAndArgs ? skipType ? desc.length() : typeStart : argsStart);
         final String ret;
@@ -137,12 +138,16 @@ public interface Matcher {
         }
 
         Optional<String> getOwnerType();
+
         String getName();
+
         Optional<String> getReturnType();
+
         Optional<String[]> getArgumentTypes();
 
         @AllArgsConstructor(access = AccessLevel.PRIVATE)
-        @Value class MatchableImpl implements Matchable {
+        @Value
+        class MatchableImpl implements Matchable {
             @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
             Optional<String> ownerType;
             String name;

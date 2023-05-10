@@ -2,7 +2,6 @@ package net.mine_diver.mixture.inject;
 
 import net.mine_diver.mixture.handler.*;
 import net.mine_diver.mixture.transform.MixtureInfo;
-import net.mine_diver.mixture.util.MixtureUtil;
 import net.mine_diver.sarcasm.util.ASMHelper;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -38,8 +37,7 @@ public final class InjectInjector<T extends Inject & CommonInjector> implements 
             int opcode = injectionPoint.getOpcode();
             boolean isAtReturn = opcode >= IRETURN && opcode < RETURN;
             Type callbackInfoType = returnVoid ? CALLBACKINFO_TYPE : CALLBACKINFORETURNABLE_TYPE;
-            Type[] handlerArgs = MixtureUtil.concat(argumentTypes, callbackInfoType);
-            int callbackOrdinal = handlerArgs.length;
+            int callbackOrdinal = index + 1;
             boolean usesCallbackInfo = StreamSupport.stream(handler.methodNode.instructions.spliterator(), false).anyMatch(abstractInsnNode1 -> abstractInsnNode1 instanceof VarInsnNode && abstractInsnNode1.getOpcode() == ALOAD && ((VarInsnNode) abstractInsnNode1).var == callbackOrdinal);
             LocalVariableNode returnVar = null;
             LocalVariableNode callbackInfoVar = null;

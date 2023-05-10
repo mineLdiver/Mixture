@@ -10,16 +10,21 @@ import java.lang.annotation.Target;
 @Documented
 public @interface At {
 
-	String value();
-	Reference target() default @Reference("");
-	Desc desc() default @Desc(@Reference(""));
-	Shift shift() default Shift.UNSET;
-	int ordinal() default -1;
-	int opcode() default -1;
-	
-	enum Shift {
-		BEFORE,
-		UNSET,
-		AFTER
-	}
+    String value();
+
+    Reference target() default @Reference("");
+
+    Desc desc() default @Desc(@Reference(""));
+
+    Shift shift() default Shift.UNSET;
+
+    int ordinal() default -1;
+
+    int opcode() default -1;
+
+    enum Shift {
+        BEFORE,
+        UNSET,
+        AFTER
+    }
 }

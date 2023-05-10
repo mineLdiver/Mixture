@@ -8,8 +8,9 @@ public class Target {
 
     public int testField = 42;
 
-    private Target() {}
-    
+    private Target() {
+    }
+
     public void test(boolean condition) {
         int neverusedagain = 40;
         int butwhatif = neverusedagain * 2;

@@ -17,6 +17,7 @@ import java.util.Arrays;
 public @interface Reference {
 
     String value();
+
     String[] overrides() default {};
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

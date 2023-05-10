@@ -66,7 +66,10 @@ public final class MixtureUtil {
         return ANNOTATION_VALUE_TRANSFORMER_FACTORIES.containsKey(valueClass) ? ANNOTATION_VALUE_TRANSFORMER_FACTORIES.get(valueClass).apply(originalType) : Function.identity();
     }
 
-    private static Type arr(Type type) { return Type.getType("[" + type.getDescriptor()); }
+    private static Type arr(Type type) {
+        return Type.getType("[" + type.getDescriptor());
+    }
+
     private static final Map<Type, Class<?>> PRIMITIVE_CLASSES = make(() -> {
         Map<Type, Class<?>> m = new HashMap<>();
         m.put(Type.VOID_TYPE, void.class);

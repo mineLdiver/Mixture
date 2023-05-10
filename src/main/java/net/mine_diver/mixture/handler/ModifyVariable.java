@@ -8,10 +8,16 @@ import java.lang.annotation.*;
 public @interface ModifyVariable {
 
     Reference[] method() default {};
+
     Desc[] target() default {};
+
     At at();
+
     int index();
+
     boolean argsOnly() default false;
+
     LocalCapture locals() default LocalCapture.NO_CAPTURE;
+
     String predicate() default "";
 }

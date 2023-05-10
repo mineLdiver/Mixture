@@ -7,5 +7,5 @@ import org.objectweb.asm.tree.InsnList;
 import java.util.Set;
 
 public interface InjectionPoint<T extends AbstractInsnNode> {
-	Set<T> find(InsnList insns, At at);
+    Set<T> find(InsnList insns, At at);
 }

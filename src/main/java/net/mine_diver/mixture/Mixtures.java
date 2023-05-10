@@ -21,7 +21,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public final class Mixtures implements NamespaceProvider {
-    private Mixtures() {}
+    private Mixtures() {
+    }
 
     @Override
     public String namespace() {
@@ -30,6 +31,7 @@ public final class Mixtures implements NamespaceProvider {
 
     public static final Namespace NAMESPACE = Namespace.of(new Mixtures());
     public static final Logger LOGGER = Logger.getLogger("Mixture");
+
     static {
         LOGGER.setUseParentHandlers(false);
         ConsoleHandler handler = new ConsoleHandler();
@@ -56,6 +58,7 @@ public final class Mixtures implements NamespaceProvider {
     private static final Map<Identifier, InjectionPoint<?>> INJECTION_POINTS_MUTABLE = new IdentityHashMap<>();
     private static final Map<String, Injector<?>> INJECTORS_MUTABLE = new HashMap<>();
     private static final Set<Identifier> PREDICATES_MUTABLE = Util.newIdentitySet();
+
     static {
         registerInjectionPoint(NAMESPACE.id("injection_points/head"), new HeadInjectionPoint());
         registerInjectionPoint(NAMESPACE.id("injection_points/field"), new FieldInjectionPoint());

@@ -88,7 +88,8 @@ public class TargetMixture {
                     opcode = Opcodes.PUTFIELD
             )
     )
-    private void redirectTestField(Target instance, int value) {}
+    private void redirectTestField(Target instance, int value) {
+    }
 
     @Inject(
             method = {

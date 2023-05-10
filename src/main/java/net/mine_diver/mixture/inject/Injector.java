@@ -11,5 +11,5 @@ import java.util.Set;
 
 public interface Injector<T extends Annotation & CommonInjector> {
 
-	void inject(ClassNode mixedClass, MethodNode mixedMethod, AbstractInsnNode injectionPoint, Set<MixtureInfo.HandlerInfo<T>> handlers);
+    void inject(ClassNode mixedClass, MethodNode mixedMethod, AbstractInsnNode injectionPoint, Set<MixtureInfo.HandlerInfo<T>> handlers);
 }
