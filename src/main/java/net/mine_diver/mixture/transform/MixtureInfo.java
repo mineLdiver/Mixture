@@ -16,17 +16,18 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public final class MixtureInfo {
     public final ClassNode classNode;
     public final Mixture annotation;
     public final Set<HandlerInfo<?>> handlers;
-    public final Map<String, ShadowFieldInfo> shadowFields;
+    public final Map<String, Shadow> shadows;
     public final Set<FieldNode> fields;
+    public final Set<MethodNode> methods;
 
     public MixtureInfo(Class<?> mixtureClass) {
         classNode = ASMHelper.readClassNode(mixtureClass);
@@ -38,21 +39,50 @@ public final class MixtureInfo {
             }
             return false;
         })).map(HandlerInfo::new).collect(Collectors.toCollection(Util::newIdentitySet)));
-        shadowFields = Collections.unmodifiableMap(classNode.fields
-                .stream()
-                .filter(fieldNode -> fieldNode.invisibleAnnotations
-                        .stream()
-                        .anyMatch(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
-                )
-                .map(ShadowFieldInfo::new)
-                .collect(Collectors.toMap(
-                        shadowFieldInfo -> ASMHelper.toTarget(classNode, shadowFieldInfo.fieldNode),
-                        Function.identity()
-                ))
-        );
+        {
+            Map<String, Shadow> shadows = new HashMap<>();
+            classNode.fields
+                    .stream()
+                    .filter(fieldNode -> fieldNode.invisibleAnnotations != null && fieldNode.invisibleAnnotations
+                            .stream()
+                            .anyMatch(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
+                    )
+                    .forEach(fieldNode -> shadows.put(
+                            ASMHelper.toTarget(classNode, fieldNode),
+                            MixtureUtil.createAnnotationInstance(
+                                    fieldNode.invisibleAnnotations
+                                            .stream()
+                                            .filter(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
+                                            .findFirst()
+                                            .orElseThrow(NullPointerException::new)
+                            )
+                    ));
+            classNode.methods
+                    .stream()
+                    .filter(methodNode -> methodNode.invisibleAnnotations != null && methodNode.invisibleAnnotations
+                            .stream()
+                            .anyMatch(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
+                    )
+                    .forEach(methodNode -> shadows.put(
+                            ASMHelper.toTarget(classNode, methodNode),
+                            MixtureUtil.createAnnotationInstance(
+                                    methodNode.invisibleAnnotations
+                                            .stream()
+                                            .filter(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
+                                            .findFirst()
+                                            .orElseThrow(NullPointerException::new)
+                            )
+                    ));
+            this.shadows = Collections.unmodifiableMap(shadows);
+        }
         fields = Collections.unmodifiableSet((Set<? extends FieldNode>) classNode.fields
                 .stream()
-                .filter(fieldNode -> !shadowFields.containsKey(ASMHelper.toTarget(classNode, fieldNode)))
+                .filter(fieldNode -> !shadows.containsKey(ASMHelper.toTarget(classNode, fieldNode)))
+                .collect(Collectors.toCollection(Util::newIdentitySet))
+        );
+        methods = Collections.unmodifiableSet((Set<? extends MethodNode>) classNode.methods
+                .stream()
+                .filter(methodNode -> !shadows.containsKey(ASMHelper.toTarget(classNode, methodNode)))
                 .collect(Collectors.toCollection(Util::newIdentitySet))
         );
     }
@@ -69,26 +99,6 @@ public final class MixtureInfo {
             AnnotationNode node = anns.iterator().next();
             annotation = CommonInjector.of(MixtureUtil.createAnnotationInstance(node));
             methodNode.invisibleAnnotations.remove(node);
-        }
-
-        public MixtureInfo getMixtureInfo() {
-            return MixtureInfo.this;
-        }
-    }
-
-    public final class ShadowFieldInfo {
-        public final FieldNode fieldNode;
-        public final Shadow annotation;
-
-        private ShadowFieldInfo(FieldNode fieldNode) {
-            this.fieldNode = fieldNode;
-            annotation = MixtureUtil.createAnnotationInstance(
-                    fieldNode.invisibleAnnotations
-                            .stream()
-                            .filter(node -> Type.getDescriptor(Shadow.class).equals(node.desc))
-                            .findFirst()
-                            .orElseThrow(NullPointerException::new)
-            );
         }
 
         public MixtureInfo getMixtureInfo() {

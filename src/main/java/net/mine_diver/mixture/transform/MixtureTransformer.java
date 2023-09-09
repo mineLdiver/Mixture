@@ -5,6 +5,7 @@ import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.handler.CommonInjector;
 import net.mine_diver.mixture.handler.Matcher;
 import net.mine_diver.mixture.handler.Reference;
+import net.mine_diver.mixture.handler.Shadow;
 import net.mine_diver.mixture.inject.InjectionPoint;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
@@ -96,7 +97,7 @@ public final class MixtureTransformer<T> implements ProxyTransformer {
                 .forEach(methods::add);
         interfaces.addAll(info.classNode.interfaces);
         mixtureMethods.put(info, Collections.unmodifiableSet(
-                info.classNode.methods
+                info.methods
                         .stream()
                         .filter(methodNode -> !methodNode.name.startsWith("<"))
                         .collect(Collectors.<MethodNode, Set<MethodNode>>toCollection(Util::newIdentitySet))
@@ -155,16 +156,22 @@ public final class MixtureTransformer<T> implements ProxyTransformer {
         switch (abstractInsnNode.getType()) {
             case METHOD_INSN:
                 MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
-                if (methodInsn.owner.equals(mixtureInfo.classNode.name))
-                    methodInsn.owner = node.name;
+                if (methodInsn.owner.equals(mixtureInfo.classNode.name)) {
+                    Shadow shadow = mixtureInfo.shadows.get(ASMHelper.toTarget(methodInsn));
+                    if (shadow != null) {
+                        methodInsn.owner = node.superName;
+                        methodInsn.name = Reference.Parser.get(methodInsn.name, shadow.overrides());
+                    } else
+                        methodInsn.owner = node.name;
+                }
                 break;
             case FIELD_INSN:
                 FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
                 if (fieldInsn.owner.equals(mixtureInfo.classNode.name)) {
-                    MixtureInfo.ShadowFieldInfo shadowFieldInfo = mixtureInfo.shadowFields.get(ASMHelper.toTarget(fieldInsn));
-                    if (shadowFieldInfo != null) {
+                    Shadow shadow = mixtureInfo.shadows.get(ASMHelper.toTarget(fieldInsn));
+                    if (shadow != null) {
                         fieldInsn.owner = node.superName;
-                        fieldInsn.name = Reference.Parser.get(fieldInsn.name, shadowFieldInfo.annotation.overrides());
+                        fieldInsn.name = Reference.Parser.get(fieldInsn.name, shadow.overrides());
                     } else
                         fieldInsn.owner = node.name;
                 }

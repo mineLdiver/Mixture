@@ -7,11 +7,16 @@ import java.io.PrintStream;
 import java.util.Random;
 
 @Mixture(Target.class)
-public class TargetMixture {
+public abstract class TargetMixture {
     @Shadow(overrides = {
             "test:test_predicate", "secret"
     })
     private String test_shadow;
+
+    @Shadow(overrides = {
+            "test:test_predicate", "superSecretMethod"
+    })
+    abstract void test_shadowMethod();
 
     @Inject(
             method = @Reference(value = "test(Z)V"),
@@ -25,6 +30,7 @@ public class TargetMixture {
     )
     private void injectTest(boolean condition, CallbackInfo ci, int neverusedagain) {
         System.out.println("Secret string! " + test_shadow);
+        test_shadowMethod();
         System.out.println("YOOO! " + condition);
         System.out.println("CallbackInfo: " + ci);
         System.out.println("Local: " + neverusedagain);

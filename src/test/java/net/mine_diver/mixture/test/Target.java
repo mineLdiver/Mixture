@@ -12,6 +12,10 @@ public class Target {
     private Target() {
     }
 
+    private void superSecretMethod() {
+        System.out.println("Oh no! Security breach!");
+    }
+
     public void test(boolean condition) {
         int neverusedagain = 40;
         int butwhatif = neverusedagain * 2;
