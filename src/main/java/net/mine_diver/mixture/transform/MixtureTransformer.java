@@ -4,6 +4,7 @@ import lombok.Value;
 import net.mine_diver.mixture.Mixtures;
 import net.mine_diver.mixture.handler.CommonInjector;
 import net.mine_diver.mixture.handler.Matcher;
+import net.mine_diver.mixture.handler.Reference;
 import net.mine_diver.mixture.inject.InjectionPoint;
 import net.mine_diver.mixture.inject.Injector;
 import net.mine_diver.mixture.util.Identifier;
@@ -25,11 +26,11 @@ import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 public final class MixtureTransformer<T> implements ProxyTransformer {
 
     private final ClassNode targetNode;
-    private final Set<MixtureInfo> info = net.mine_diver.sarcasm.util.Util.newIdentitySet();
+    private final Set<MixtureInfo> info = Util.newIdentitySet();
     private final Set<String> methods = new HashSet<>();
     private final Set<DetachedHandlerContext<?, ?>> handlers = Util.newIdentitySet();
     private final Set<String> interfaces = new HashSet<>();
-    private final Map<String, Set<MethodNode>> mixtureMethods = new HashMap<>();
+    private final Map<MixtureInfo, Set<MethodNode>> mixtureMethods = new IdentityHashMap<>();
 
     public MixtureTransformer(Class<T> targetClass) {
         targetNode = ASMHelper.readClassNode(targetClass);
@@ -94,7 +95,7 @@ public final class MixtureTransformer<T> implements ProxyTransformer {
                 .map(ASMHelper::toTarget)
                 .forEach(methods::add);
         interfaces.addAll(info.classNode.interfaces);
-        mixtureMethods.put(info.classNode.name, Collections.unmodifiableSet(
+        mixtureMethods.put(info, Collections.unmodifiableSet(
                 info.classNode.methods
                         .stream()
                         .filter(methodNode -> !methodNode.name.startsWith("<"))
@@ -114,22 +115,18 @@ public final class MixtureTransformer<T> implements ProxyTransformer {
 
         // adding methods and fixing instruction owners
         mixtureMethods
-                .forEach((mixtureName, methodNodes) ->
-                        methodNodes
-                                .forEach(methodNode -> {
-                                    MethodNode fixedNode = ASMHelper.clone(methodNode);
-                                    fixedNode.instructions
-                                            .forEach(abstractInsnNode -> fixInstructionOwner(mixedClass, mixtureName, abstractInsnNode));
-                                    mixedClass.methods.add(fixedNode);
-                                }));
+                .forEach((mixtureInfo, methodNodes) -> methodNodes
+                        .forEach(methodNode -> {
+                            MethodNode fixedNode = ASMHelper.clone(methodNode);
+                            fixedNode.instructions
+                                    .forEach(abstractInsnNode -> fixAccessInstruction(mixedClass, mixtureInfo, abstractInsnNode));
+                            mixedClass.methods.add(fixedNode);
+                        }));
 
         // adding fields
         info
                 .stream()
-                .flatMap(mixtureInfo ->
-                        mixtureInfo.classNode.fields
-                                .stream()
-                )
+                .flatMap(mixtureInfo -> mixtureInfo.fields.stream())
                 .forEach(mixedClass.fields::add);
 
         // handling injections
@@ -154,17 +151,23 @@ public final class MixtureTransformer<T> implements ProxyTransformer {
                 .forEach((method, IIPHandlers) -> IIPHandlers.forEach((injector, IPHandlers) -> IPHandlers.forEach((injectionPoint, handlers) -> injector.inject(mixedClass, method, injectionPoint, handlers))));
     }
 
-    private static void fixInstructionOwner(ClassNode node, String mixtureName, AbstractInsnNode abstractInsnNode) {
+    private static void fixAccessInstruction(ClassNode node, MixtureInfo mixtureInfo, AbstractInsnNode abstractInsnNode) {
         switch (abstractInsnNode.getType()) {
             case METHOD_INSN:
                 MethodInsnNode methodInsn = (MethodInsnNode) abstractInsnNode;
-                if (methodInsn.owner.equals(mixtureName))
+                if (methodInsn.owner.equals(mixtureInfo.classNode.name))
                     methodInsn.owner = node.name;
                 break;
             case FIELD_INSN:
                 FieldInsnNode fieldInsn = (FieldInsnNode) abstractInsnNode;
-                if (fieldInsn.owner.equals(mixtureName))
-                    fieldInsn.owner = node.name;
+                if (fieldInsn.owner.equals(mixtureInfo.classNode.name)) {
+                    MixtureInfo.ShadowFieldInfo shadowFieldInfo = mixtureInfo.shadowFields.get(ASMHelper.toTarget(fieldInsn));
+                    if (shadowFieldInfo != null) {
+                        fieldInsn.owner = node.superName;
+                        fieldInsn.name = Reference.Parser.get(fieldInsn.name, shadowFieldInfo.annotation.overrides());
+                    } else
+                        fieldInsn.owner = node.name;
+                }
                 break;
         }
     }

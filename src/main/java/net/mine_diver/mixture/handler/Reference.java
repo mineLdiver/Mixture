@@ -23,8 +23,10 @@ public @interface Reference {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Parser {
         public static String get(Reference reference) {
-            String value = reference.value();
-            String[] overrides = reference.overrides();
+            return get(reference.value(), reference.overrides());
+        }
+
+        public static String get(String value, String[] overrides) {
             if (overrides.length > 0) {
                 if ((overrides.length & 1) == 1)
                     throw new IllegalArgumentException("Override arrays can't be of odd size! " + Arrays.toString(overrides));

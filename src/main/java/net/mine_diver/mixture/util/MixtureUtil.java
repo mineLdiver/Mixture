@@ -51,7 +51,7 @@ public final class MixtureUtil {
         for (Method method : annotationType.getDeclaredMethods())
             methods.put(method.getName(), method);
         Map<String, Function<Object, ?>> transformers = ANNOTATION_TRANSFORMATION_CACHE.computeIfAbsent(annotationType, annType -> new HashMap<>());
-        for (int i = 0; i < node.values.size(); i += 2) {
+        if (node.values != null) for (int i = 0; i < node.values.size(); i += 2) {
             String key = (String) node.values.get(i);
             Object value = node.values.get(i + 1);
             values.put(key, transformers.computeIfAbsent(key, s -> createValueTransformer(methods.get(key).getReturnType(), value.getClass())).apply(value));

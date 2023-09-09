@@ -8,6 +8,10 @@ import java.util.Random;
 
 @Mixture(Target.class)
 public class TargetMixture {
+    @Shadow(overrides = {
+            "test:test_predicate", "secret"
+    })
+    private String test_shadow;
 
     @Inject(
             method = @Reference(value = "test(Z)V"),
@@ -20,6 +24,7 @@ public class TargetMixture {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void injectTest(boolean condition, CallbackInfo ci, int neverusedagain) {
+        System.out.println("Secret string! " + test_shadow);
         System.out.println("YOOO! " + condition);
         System.out.println("CallbackInfo: " + ci);
         System.out.println("Local: " + neverusedagain);

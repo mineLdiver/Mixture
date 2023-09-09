@@ -21,8 +21,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public final class Mixtures implements NamespaceProvider {
-    private Mixtures() {
-    }
+    private Mixtures() {}
 
     @Override
     public String namespace() {

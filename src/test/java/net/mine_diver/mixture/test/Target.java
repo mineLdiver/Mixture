@@ -7,6 +7,7 @@ public class Target {
     public static final Target INSTANCE = new Target();
 
     public int testField = 42;
+    private String secret = "dont read this!!";
 
     private Target() {
     }
@@ -30,6 +31,7 @@ public class Target {
         System.out.println(testField);
         testField += 20;
         System.out.println(testField);
+        System.out.println("can't use this without reflection! " + secret);
     }
 
     public void altTest(boolean condition) {
