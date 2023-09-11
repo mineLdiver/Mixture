@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface Redirect {
 
-    Reference[] method();
+    Reference[] method() default {};
 
     Desc[] target() default {};
 

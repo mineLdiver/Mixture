@@ -26,14 +26,29 @@ public class ModifyVariableInjector<T extends ModifyVariable & CommonInjector> i
                 insns.add(new VarInsnNode(ALOAD, 0));
             int varIndex = handler.annotation.index();
             boolean argsOnly = handler.annotation.argsOnly();
-            Type varType = argsOnly ? Type.getArgumentTypes(mixedMethod.desc)[varIndex - 1] : Type.getType(Locals.getLocalVariableAt(mixedClass, mixedMethod, injectionPoint, varIndex).desc);
+            Type varType;
+            if (argsOnly) {
+                int argIndex = 1;
+                varTypeInit:
+                {
+                    for (Type type : Type.getArgumentTypes(mixedMethod.desc)) {
+                        if (argIndex == varIndex) {
+                            varType = type;
+                            break varTypeInit;
+                        }
+                        argIndex += type.getSize();
+                    }
+                    throw new IllegalStateException();
+                }
+            } else
+                varType = Type.getType(Locals.getLocalVariableAt(mixedClass, mixedMethod, injectionPoint, varIndex).desc);
             int curSize = varType.getSize();
             insns.add(new VarInsnNode(varType.getOpcode(Opcodes.ILOAD), varIndex));
             Type[] methodArgs = Type.getArgumentTypes(mixedMethod.desc);
             Type[] actualHandlerArgs = Type.getArgumentTypes(handler.methodNode.desc);
-            boolean hasMethodArgs = actualHandlerArgs.length - 1 > methodArgs.length;
+            boolean hasMethodArgs = actualHandlerArgs.length > 1;
             if (hasMethodArgs) {
-                int methodArg = isStatic ? 0 : 1;
+                int methodArg = 1;
                 for (Type argType : methodArgs) {
                     insns.add(new VarInsnNode(argType.getOpcode(ILOAD), methodArg));
                     methodArg += argType.getSize();
