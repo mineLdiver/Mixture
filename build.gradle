@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.ow2.asm:asm-tree:9.4'
     implementation 'org.ow2.asm:asm-util:9.4'
 
-    implementation 'io.github.mineLdiver:SarcASM:65304753'
+    implementation 'io.github.mineLdiver:SarcASM:556c167d'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'

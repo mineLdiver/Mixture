@@ -3,7 +3,7 @@ package net.mine_diver.mixture.handler;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.mine_diver.mixture.Mixtures;
-import net.mine_diver.mixture.util.Identifier;
+import net.mine_diver.sarcasm.util.Identifier;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

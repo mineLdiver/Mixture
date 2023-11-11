@@ -1,8 +1,8 @@
 package net.mine_diver.mixture.test;
 
 import net.mine_diver.mixture.Mixtures;
-import net.mine_diver.mixture.util.Identifier;
 import net.mine_diver.sarcasm.SarcASM;
+import net.mine_diver.sarcasm.util.Identifier;
 
 public class Main {
 
