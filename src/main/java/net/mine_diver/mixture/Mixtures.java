@@ -6,6 +6,8 @@ import net.mine_diver.mixture.transform.MixtureInfo;
 import net.mine_diver.mixture.transform.MixtureTransformer;
 import net.mine_diver.mixture.util.MixtureUtil;
 import net.mine_diver.sarcasm.SarcASM;
+import net.mine_diver.sarcasm.transformer.RequestedMethodsTransformer;
+import net.mine_diver.sarcasm.transformer.TransformerManager;
 import net.mine_diver.sarcasm.util.Identifier;
 import net.mine_diver.sarcasm.util.Namespace;
 import net.mine_diver.sarcasm.util.NamespaceProvider;
@@ -77,7 +79,10 @@ public final class Mixtures implements NamespaceProvider {
         Class<?> target = info.annotation.value();
         MIXTURES.computeIfAbsent(target, aClass -> {
             MixtureTransformer<?> transformer = new MixtureTransformer<>(target);
-            SarcASM.registerTransformer(aClass, transformer);
+            TransformerManager manager = SarcASM.getManager(aClass);
+            manager.addPhaseOrdering(RequestedMethodsTransformer.PHASE, MixtureTransformer.PHASE);
+            manager.addPhaseOrdering(MixtureTransformer.PHASE, TransformerManager.DEFAULT_PHASE);
+            manager.register(transformer);
             return transformer;
         }).add(info);
 

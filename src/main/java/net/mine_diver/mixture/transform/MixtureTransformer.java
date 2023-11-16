@@ -25,6 +25,7 @@ import static org.objectweb.asm.tree.AbstractInsnNode.FIELD_INSN;
 import static org.objectweb.asm.tree.AbstractInsnNode.METHOD_INSN;
 
 public final class MixtureTransformer<T> implements ProxyTransformer {
+    public static final Identifier PHASE = Mixtures.NAMESPACE.id("mixture");
 
     private final ClassNode targetNode;
     private final Set<MixtureInfo> info = Util.newIdentitySet();
